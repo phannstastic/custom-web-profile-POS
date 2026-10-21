@@ -418,28 +418,31 @@
                     <button 
                         @click="openPaymentModal()" 
                         :disabled="cart.length === 0"
-                        class="py-3 px-3 bg-stone-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-1.5">
+                        class="py-3 px-3 bg-stone-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer">
                         <i class="fa-solid fa-money-bill-wave text-emerald-400"></i>
                         <span>Bayar Tunai</span>
                     </button>
 
-                    <button 
-                        @click="payWithQris()" 
-                        :disabled="cart.length === 0 || isProcessingQris"
-                        class="py-3 px-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md shadow-brand-600/30 transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer">
-                        <template x-if="!isProcessingQris">
-                            <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-qrcode text-white"></i>
-                                <span>Bayar QRIS</span>
-                            </span>
-                        </template>
-                        <template x-if="isProcessingQris">
-                            <span class="flex items-center gap-1.5">
-                                <i class="fa-solid fa-spinner animate-spin text-white"></i>
-                                <span>Menunggu QRIS...</span>
-                            </span>
-                        </template>
-                    </button>
+                    <!-- Tombol QRIS: Jika sedang menunggu scan QRIS, sediakan opsi Batal agar kasir fleksibel -->
+                    <template x-if="!isProcessingQris">
+                        <button 
+                            @click="payWithQris()" 
+                            :disabled="cart.length === 0"
+                            class="py-3 px-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md shadow-brand-600/30 transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                            <i class="fa-solid fa-qrcode text-white"></i>
+                            <span>Bayar QRIS</span>
+                        </button>
+                    </template>
+
+                    <template x-if="isProcessingQris">
+                        <button 
+                            @click="cancelQrisPayment()" 
+                            class="py-3 px-3 bg-red-600 hover:bg-red-700 text-white font-extrabold rounded-xl shadow-md shadow-red-600/30 transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer animate-pulse"
+                            title="Klik untuk membatalkan proses QRIS dan kembali normal">
+                            <i class="fa-solid fa-xmark"></i>
+                            <span>Batalkan QRIS</span>
+                        </button>
+                    </template>
                 </div>
             </div>
 
@@ -934,9 +937,7 @@
                             },
                             onClose: function() {
                                 // Kasir menutup popup Snap dengan tombol [X] -> reset tombol agar bisa diklik kembali
-                                self.stopStatusPolling();
-                                self.isProcessingQris = false;
-                                self.showToast('Pembayaran QRIS ditutup.', 'info');
+                                self.cancelQrisPayment();
                             }
                         });
 
@@ -944,6 +945,19 @@
                         this.showToast('Terjadi kesalahan koneksi ke server.', 'error');
                         this.isProcessingQris = false;
                     }
+                },
+
+                cancelQrisPayment() {
+                    this.stopStatusPolling();
+                    this.isProcessingQris = false;
+
+                    // Jika popup Snap iframe masih ada di DOM, kita sembunyikan/tutup
+                    const snapPopup = document.getElementById('snap-midtrans');
+                    if (snapPopup) {
+                        snapPopup.remove();
+                    }
+
+                    this.showToast('Pembayaran QRIS telah dibatalkan.', 'info');
                 },
 
                 stopStatusPolling() {
@@ -963,8 +977,15 @@
                     this.activePollInterval = setInterval(async () => {
                         attempts++;
                         if (attempts > maxAttempts) {
-                            self.stopStatusPolling();
-                            self.isProcessingQris = false;
+                            self.cancelQrisPayment();
+                            return;
+                        }
+
+                        // Deteksi otomatis jika popup Snap ditutup oleh user tanpa memicu callback onClose
+                        const snapContainer = document.getElementById('snap-midtrans');
+                        if (!snapContainer && attempts > 2) {
+                            // Jika sudah lewat 6 detik dan modal popup snap sudah hilang dari layar
+                            self.cancelQrisPayment();
                             return;
                         }
 
