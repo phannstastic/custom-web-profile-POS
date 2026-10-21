@@ -13,7 +13,22 @@
     ?>
     <?php if ($storeLogo): ?>
         <link rel="icon" type="image/png" href="<?= $storeLogo ?>">
+        <link rel="apple-touch-icon" href="<?= $storeLogo ?>">
+    <?php else: ?>
+        <link rel="icon" type="image/png" href="/assets/images/icon-192.png">
+        <link rel="apple-touch-icon" href="/assets/images/icon-192.png">
     <?php endif; ?>
+
+    <!-- PWA Web App Manifest & Mobile Metas -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="<?= $primaryColor ?>">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="POS Kang Naryo">
+
+    <!-- Dexie.js (IndexedDB wrapper for low-device offline & instant caching) -->
+    <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
 
     <!-- Midtrans Snap JS (Sandbox / Production) -->
     <?php
@@ -101,8 +116,26 @@
             </button>
         </div>
 
-        <!-- Header Actions (Full Screen, Admin Link, Cart badge for Mobile) -->
+        <!-- Header Actions (Full Screen, Install App, Admin Link, Cart badge for Mobile) -->
         <div class="flex items-center gap-2">
+            <!-- PWA Install Prompt Button -->
+            <button 
+                x-show="deferredPrompt !== null" 
+                @click="promptInstallApp()" 
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-amber-500 to-brand-600 hover:from-amber-600 hover:to-brand-700 text-white rounded-xl text-xs font-bold shadow-md shadow-brand-500/20 transition-all animate-pulse"
+                title="Pasang Aplikasi Kasir ke Komputer / HP">
+                <i class="fa-solid fa-download text-xs"></i>
+                <span class="hidden md:inline">Pasang Aplikasi</span>
+            </button>
+
+            <!-- Fullscreen Toggle Button -->
+            <button 
+                @click="toggleFullScreen()" 
+                class="hidden sm:inline-flex items-center justify-center w-8 h-8 rounded-xl bg-stone-800 hover:bg-stone-700 text-stone-300 transition-colors" 
+                title="Layar Penuh (Standalone Mode)">
+                <i :class="isFullscreen ? 'fa-solid fa-compress' : 'fa-solid fa-expand'" class="text-xs"></i>
+            </button>
+
             <!-- Mobile Toggle View: Menu vs Keranjang -->
             <button 
                 @click="mobileTab = (mobileTab === 'menu' ? 'cart' : 'menu')" 
@@ -770,8 +803,99 @@
 
                 formatRupiah(num) {
                     return 'Rp ' + Number(num || 0).toLocaleString('id-ID');
+                },
+
+                // PWA & Low-Device / Dexie.js Integration
+                deferredPrompt: null,
+                isFullscreen: false,
+                indexedDbInstance: null,
+
+                async init() {
+                    this.initIndexedDb();
+                    this.setupPwaEvents();
+                },
+
+                async initIndexedDb() {
+                    try {
+                        if (typeof Dexie !== 'undefined') {
+                            this.indexedDbInstance = new Dexie('KangNaryoPOS_DB');
+                            this.indexedDbInstance.version(1).stores({
+                                products: 'id, category_slug, name, price, is_available',
+                                categories: 'id, slug, name'
+                            });
+
+                            // Jika offline atau jaringan lambat, baca dulu dari IndexedDB
+                            const cachedCount = await this.indexedDbInstance.products.count();
+                            if (cachedCount > 0 && (!this.products || this.products.length === 0)) {
+                                this.products = await this.indexedDbInstance.products.toArray();
+                                this.categories = await this.indexedDbInstance.categories.toArray();
+                                console.log('[Dexie.js] Menu dimuat seketika dari IndexedDB lokal (' + cachedCount + ' item)');
+                            }
+
+                            // Sync dan perbarui IndexedDB dengan data terbaru
+                            if (this.products && this.products.length > 0) {
+                                await this.indexedDbInstance.products.clear();
+                                await this.indexedDbInstance.products.bulkPut(this.products);
+                                await this.indexedDbInstance.categories.clear();
+                                await this.indexedDbInstance.categories.bulkPut(this.categories);
+                                console.log('[Dexie.js] IndexedDB berhasil disinkronisasi & di-cache.');
+                            }
+                        }
+                    } catch (e) {
+                        console.warn('[Dexie.js] IndexedDB fallback warning:', e);
+                    }
+                },
+
+                setupPwaEvents() {
+                    // Tangkap event instalasi browser PWA
+                    window.addEventListener('beforeinstallprompt', (e) => {
+                        e.preventDefault();
+                        this.deferredPrompt = e;
+                        console.log('[PWA] beforeinstallprompt ditangkap, tombol pasang siap ditampilkan.');
+                    });
+
+                    window.addEventListener('appinstalled', () => {
+                        this.deferredPrompt = null;
+                        console.log('[PWA] Aplikasi POS berhasil dipasang di perangkat.');
+                    });
+                },
+
+                async promptInstallApp() {
+                    if (this.deferredPrompt) {
+                        this.deferredPrompt.prompt();
+                        const { outcome } = await this.deferredPrompt.userChoice;
+                        console.log('[PWA] Pilihan user install:', outcome);
+                        this.deferredPrompt = null;
+                    }
+                },
+
+                toggleFullScreen() {
+                    if (!document.fullscreenElement) {
+                        document.documentElement.requestFullscreen().then(() => {
+                            this.isFullscreen = true;
+                        }).catch(err => {
+                            console.warn('Fullscreen error:', err);
+                        });
+                    } else {
+                        if (document.exitFullscreen) {
+                            document.exitFullscreen().then(() => {
+                                this.isFullscreen = false;
+                            });
+                        }
+                    }
                 }
             };
+        }
+    </script>
+
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('[PWA] Service Worker terdaftar (POS):', reg.scope))
+                    .catch((err) => console.warn('[PWA] Service Worker gagal daftar:', err));
+            });
         }
     </script>
 </body>

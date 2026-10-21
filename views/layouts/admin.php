@@ -4,6 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Admin Dashboard') ?></title>
+    <!-- PWA Web App Manifest & Mobile Metas -->
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" type="image/png" href="/assets/images/icon-192.png">
+    <link rel="apple-touch-icon" href="/assets/images/icon-192.png">
+    <meta name="theme-color" content="#ea580c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="POS Kang Naryo">
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -167,5 +176,15 @@
         </footer>
     </div>
 
+    <!-- Service Worker Registration -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then((reg) => console.log('[PWA] Service Worker terdaftar (Admin):', reg.scope))
+                    .catch((err) => console.warn('[PWA] Service Worker gagal daftar:', err));
+            });
+        }
+    </script>
 </body>
 </html>
