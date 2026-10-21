@@ -30,6 +30,10 @@ switch ($uri) {
         (new \App\Controllers\PosController())->index();
         break;
 
+    case '/api/orders/cash':
+        (new \App\Controllers\PosController())->submitCashOrder();
+        break;
+
     // --- Admin Routes ---
     case '/admin':
         (new AdminController())->dashboard();
@@ -104,6 +108,12 @@ switch ($uri) {
         break;
 
     default:
+        // Cek dynamic route: /pos/receipt/{id}
+        if (preg_match('#^/pos/receipt/(\d+)$#', $uri, $matches)) {
+            (new \App\Controllers\PosController())->receipt((int) $matches[1]);
+            break;
+        }
+
         http_response_code(404);
         header('Content-Type: text/html; charset=utf-8');
         echo "<h1>404 Not Found</h1><p>Halaman atau rute [{$uri}] tidak ditemukan.</p><a href='/'>Kembali ke Beranda</a>";

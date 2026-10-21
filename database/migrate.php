@@ -89,6 +89,7 @@ $db->exec("
         price INTEGER NOT NULL,
         quantity INTEGER NOT NULL DEFAULT 1,
         subtotal INTEGER NOT NULL,
+        notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE,
         FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE SET NULL

@@ -364,12 +364,12 @@
 
                 <!-- Process Payment CTA Button -->
                 <button 
-                    @click="proceedToPayment()" 
+                    @click="openPaymentModal()" 
                     :disabled="cart.length === 0"
                     class="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-lg shadow-brand-600/30 hover:shadow-xl transition-all text-sm flex items-center justify-between">
                     <span class="flex items-center gap-2">
                         <i class="fa-solid fa-cash-register"></i>
-                        <span>Lanjut ke Pembayaran</span>
+                        <span>Bayar Tunai / Cash</span>
                     </span>
                     <span class="font-mono-num text-sm bg-white/20 px-2 py-0.5 rounded-lg" x-text="formatRupiah(subtotal)"></span>
                 </button>
@@ -377,6 +377,127 @@
 
         </aside>
 
+    </div>
+
+    <!-- MODAL PEMBAYARAN TUNAI (CASH WORKFLOW) -->
+    <div x-show="showPaymentModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto bg-stone-900/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div 
+            @click.away="if(!isProcessing) showPaymentModal = false" 
+            class="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-stone-100 space-y-5">
+            
+            <div class="flex items-center justify-between border-b border-stone-100 pb-3">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center text-sm font-bold">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-base font-extrabold text-stone-900 leading-tight">Pembayaran Tunai (Cash)</h3>
+                        <span class="text-[11px] text-stone-400 font-semibold" x-text="(tableNumber || 'Meja') + ' • ' + (customerName || 'Umum')"></span>
+                    </div>
+                </div>
+                <button @click="if(!isProcessing) showPaymentModal = false" class="text-stone-400 hover:text-stone-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <!-- Total Yang Harus Dibayar -->
+            <div class="p-4 bg-stone-50 rounded-2xl border border-stone-200 text-center">
+                <span class="text-xs text-stone-500 font-bold uppercase tracking-wider block">Total Tagihan Pesanan</span>
+                <span class="text-3xl font-black text-stone-900 font-mono-num mt-1 block" x-text="formatRupiah(subtotal)"></span>
+            </div>
+
+            <!-- Input Uang Diterima & Tombol Cepat Pecahan -->
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Jumlah Uang Diterima (Rp)</label>
+                    <div class="relative">
+                        <span class="absolute left-3.5 top-2.5 text-stone-400 font-bold text-sm">Rp</span>
+                        <input 
+                            type="number" 
+                            x-model.number="cashGiven" 
+                            placeholder="0" 
+                            class="w-full pl-11 pr-4 py-2.5 bg-white border-2 border-stone-300 rounded-xl text-lg font-black font-mono-num text-stone-900 focus:outline-none focus:border-brand-500 transition-all"
+                            @keydown.enter="processCashPayment()"
+                        >
+                    </div>
+                </div>
+
+                <!-- Tombol Cepat Pecahan Uang -->
+                <div>
+                    <span class="block text-[11px] font-bold text-stone-500 uppercase tracking-wider mb-1.5">Pilihan Cepat:</span>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button 
+                            type="button" 
+                            @click="cashGiven = subtotal" 
+                            class="py-2 px-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-extrabold transition-all border border-stone-200/80">
+                            Uang Pas
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="cashGiven = 20000" 
+                            class="py-2 px-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-extrabold transition-all border border-stone-200/80">
+                            20.000
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="cashGiven = 50000" 
+                            class="py-2 px-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-extrabold transition-all border border-stone-200/80">
+                            50.000
+                        </button>
+                        <button 
+                            type="button" 
+                            @click="cashGiven = 100000" 
+                            class="py-2 px-1 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-extrabold transition-all border border-stone-200/80">
+                            100.000
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Kotak Kembalian Realtime -->
+            <div 
+                :class="cashGiven >= subtotal ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-red-50 border-red-200 text-red-700'"
+                class="p-4 rounded-2xl border flex items-center justify-between transition-colors">
+                <div>
+                    <span class="text-xs font-bold uppercase tracking-wider block" x-text="cashGiven >= subtotal ? 'Uang Kembalian' : 'Uang Masih Kurang'"></span>
+                    <span class="text-xl font-extrabold font-mono-num mt-0.5 block" x-text="formatRupiah(Math.abs(cashGiven - subtotal))"></span>
+                </div>
+                <div class="text-2xl">
+                    <i :class="cashGiven >= subtotal ? 'fa-solid fa-circle-check text-emerald-500' : 'fa-solid fa-circle-exclamation text-red-500'"></i>
+                </div>
+            </div>
+
+            <!-- Tombol Konfirmasi Selesai & Cetak Struk -->
+            <div class="flex items-center gap-3 pt-2">
+                <button 
+                    type="button" 
+                    @click="showPaymentModal = false" 
+                    :disabled="isProcessing"
+                    class="w-1/3 py-3 rounded-xl border border-stone-300 text-stone-600 text-xs font-bold hover:bg-stone-50 transition-colors">
+                    Batal
+                </button>
+
+                <button 
+                    type="button" 
+                    @click="processCashPayment()" 
+                    :disabled="cashGiven < subtotal || isProcessing"
+                    class="w-2/3 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
+                    <template x-if="!isProcessing">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-print"></i>
+                            <span>Bayar & Cetak Nota (58mm)</span>
+                        </span>
+                    </template>
+                    <template x-if="isProcessing">
+                        <span class="flex items-center gap-2">
+                            <i class="fa-solid fa-spinner animate-spin"></i>
+                            <span>Menyimpan Transaksi...</span>
+                        </span>
+                    </template>
+                </button>
+            </div>
+
+        </div>
     </div>
 
     <!-- Alpine.js POS State Controller Script -->
@@ -387,7 +508,7 @@
                 categories: <?= json_encode($categories, JSON_UNESCAPED_UNICODE) ?>,
                 selectedCategory: 'all',
                 searchQuery: '',
-                mobileTab: 'menu', // 'menu' or 'cart'
+                mobileTab: 'menu',
 
                 // Order metadata
                 tableNumber: 'Meja 01',
@@ -395,6 +516,11 @@
 
                 // Cart state
                 cart: [],
+
+                // Cash Payment Modal State
+                showPaymentModal: false,
+                cashGiven: 0,
+                isProcessing: false,
 
                 get filteredProducts() {
                     return this.products.filter(item => {
@@ -449,7 +575,6 @@
                         if (this.cart[index].qty > 1) {
                             this.cart[index].qty--;
                         } else {
-                            // Hapus jika sudah 1 lalu dikurangi
                             this.cart.splice(index, 1);
                         }
                     }
@@ -461,9 +586,57 @@
                     }
                 },
 
-                proceedToPayment() {
+                openPaymentModal() {
                     if (this.cart.length === 0) return;
-                    alert('Keranjang siap! Total: ' + this.formatRupiah(this.subtotal) + '\nWorkflow pembayaran Tunai & Cetak Struk 58mm akan diimplementasikan pada Issue #5.');
+                    this.cashGiven = this.subtotal; // default pas
+                    this.showPaymentModal = true;
+                },
+
+                async processCashPayment() {
+                    if (this.cashGiven < this.subtotal || this.isProcessing) return;
+
+                    this.isProcessing = true;
+
+                    const payload = {
+                        customer_name: this.customerName,
+                        table_number: this.tableNumber,
+                        total_amount: this.subtotal,
+                        cash_paid: this.cashGiven,
+                        items: this.cart
+                    };
+
+                    try {
+                        const response = await fetch('/api/orders/cash', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const res = await response.json();
+
+                        if (res.success) {
+                            // Buka popup dialog cetak struk 58mm
+                            const popup = window.open(res.receipt_url, '_blank', 'width=400,height=600');
+                            if (popup) {
+                                popup.focus();
+                            }
+
+                            // Bersihkan keranjang kasir
+                            this.cart = [];
+                            this.showPaymentModal = false;
+                            this.cashGiven = 0;
+                            this.customerName = 'Pelanggan';
+
+                            // Kembali ke tab menu di mobile jika sebelumnya di cart
+                            this.mobileTab = 'menu';
+                        } else {
+                            alert('Gagal menyimpan transaksi: ' + (res.error || 'Terjadi kesalahan sistem.'));
+                        }
+                    } catch (err) {
+                        alert('Koneksi terputus ke server.');
+                    } finally {
+                        this.isProcessing = false;
+                    }
                 },
 
                 formatRupiah(num) {
