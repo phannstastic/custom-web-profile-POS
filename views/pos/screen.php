@@ -579,7 +579,7 @@
             </div>
 
             <h3 class="text-xl font-extrabold text-stone-900 mt-4 tracking-tight">Pembayaran Lunas!</h3>
-            <p class="text-xs text-stone-500 mt-1">Transaksi QRIS berhasil diverifikasi otomatis oleh sistem Midtrans.</p>
+            <p class="text-xs text-stone-500 mt-1" x-text="successPaymentMethod === 'cash' ? 'Transaksi tunai berhasil disimpan ke dalam sistem.' : 'Transaksi QRIS berhasil diverifikasi otomatis oleh sistem Midtrans.'"></p>
 
             <div class="bg-stone-50 rounded-2xl p-3.5 my-4 border border-stone-100 text-left space-y-1.5 text-xs">
                 <div class="flex justify-between">
@@ -588,11 +588,27 @@
                 </div>
                 <div class="flex justify-between">
                     <span class="text-stone-400 font-semibold">Metode:</span>
-                    <span class="font-bold text-blue-600 uppercase">QRIS Otomatis</span>
+                    <span class="font-bold uppercase" :class="successPaymentMethod === 'cash' ? 'text-emerald-600' : 'text-blue-600'" x-text="successPaymentMethod === 'cash' ? 'Uang Tunai (Cash)' : 'QRIS Otomatis'"></span>
                 </div>
-                <div class="flex justify-between">
+                <template x-if="successPaymentMethod === 'cash'">
+                    <div class="space-y-1.5 pt-1.5 border-t border-stone-200/60">
+                        <div class="flex justify-between">
+                            <span class="text-stone-400 font-semibold">Total Tagihan:</span>
+                            <span class="font-bold text-stone-900" x-text="formatRupiah(successTotalAmount)"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-stone-400 font-semibold">Uang Diterima:</span>
+                            <span class="font-semibold text-stone-700" x-text="formatRupiah(successCashPaid)"></span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-stone-400 font-semibold">Kembalian:</span>
+                            <span class="font-bold text-emerald-600 font-mono-num" x-text="formatRupiah(successCashChange)"></span>
+                        </div>
+                    </div>
+                </template>
+                <div class="flex justify-between pt-1 border-t border-stone-200/60">
                     <span class="text-stone-400 font-semibold">Status:</span>
-                    <span class="font-bold text-emerald-600 uppercase">SETTLEMENT (Lunas)</span>
+                    <span class="font-bold text-emerald-600 uppercase">LUNAS (PAID)</span>
                 </div>
             </div>
 
@@ -600,7 +616,6 @@
                 <a 
                     :href="successReceiptUrl" 
                     target="_blank" 
-                    @click="showSuccessModal = false"
                     class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-brand-600/20 transition-all flex items-center justify-center gap-2">
                     <i class="fa-solid fa-print"></i>
                     <span>Cetak Nota Kasir 58mm</span>
@@ -704,6 +719,10 @@
                 showSuccessModal: false,
                 successInvoiceNumber: '',
                 successReceiptUrl: '',
+                successPaymentMethod: 'qris',
+                successTotalAmount: 0,
+                successCashPaid: 0,
+                successCashChange: 0,
                 showConfirmResetModal: false,
                 toast: {
                     visible: false,
@@ -815,21 +834,28 @@
                         const res = await response.json();
 
                         if (res.success) {
-                            // Buka popup dialog cetak struk 58mm
-                            const popup = window.open(res.receipt_url, '_blank', 'width=400,height=600');
-                            if (popup) {
-                                popup.focus();
-                            }
+                            // Tutup modal input uang kas
+                            this.showPaymentModal = false;
+
+                            // Simpan detail pembayaran untuk modal sukses
+                            this.successInvoiceNumber = res.invoice_number;
+                            this.successReceiptUrl = res.receipt_url;
+                            this.successPaymentMethod = 'cash';
+                            this.successTotalAmount = res.total_amount;
+                            this.successCashPaid = res.cash_paid;
+                            this.successCashChange = res.cash_change;
 
                             // Bersihkan keranjang kasir
                             this.cart = [];
-                            this.showPaymentModal = false;
                             this.cashGiven = 0;
                             this.customerName = 'Pelanggan';
 
+                            // Tampilkan Modal Sukses Pembayaran Modern & Toast
+                            this.showSuccessModal = true;
+                            this.showToast('Transaksi tunai berhasil disimpan!', 'success');
+
                             // Kembali ke tab menu di mobile jika sebelumnya di cart
                             this.mobileTab = 'menu';
-                            this.showToast('Transaksi tunai berhasil disimpan!', 'success');
                         } else {
                             this.showToast('Gagal menyimpan transaksi: ' + (res.error || 'Terjadi kesalahan sistem.'), 'error');
                         }
@@ -943,6 +969,8 @@
                             // Buka Modal Sukses Modern
                             this.successInvoiceNumber = invoiceNumber;
                             this.successReceiptUrl = data.receipt_url;
+                            this.successPaymentMethod = 'qris';
+                            this.successTotalAmount = data.order ? data.order.total_amount : 0;
                             this.showSuccessModal = true;
                             this.showToast('Pembayaran QRIS LUNAS!', 'success');
                         }
