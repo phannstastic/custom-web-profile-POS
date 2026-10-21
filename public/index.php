@@ -34,6 +34,14 @@ switch ($uri) {
         (new \App\Controllers\PosController())->submitCashOrder();
         break;
 
+    case '/api/payment/create':
+        (new \App\Controllers\PaymentController())->createSnap();
+        break;
+
+    case '/api/payment/webhook':
+        (new \App\Controllers\PaymentController())->webhook();
+        break;
+
     // --- Admin Routes ---
     case '/admin':
         (new AdminController())->dashboard();
@@ -111,6 +119,12 @@ switch ($uri) {
         // Cek dynamic route: /pos/receipt/{id}
         if (preg_match('#^/pos/receipt/(\d+)$#', $uri, $matches)) {
             (new \App\Controllers\PosController())->receipt((int) $matches[1]);
+            break;
+        }
+
+        // Cek dynamic route: /api/payment/status/{invoice}
+        if (preg_match('#^/api/payment/status/([A-Za-z0-9-]+)$#', $uri, $matches)) {
+            (new \App\Controllers\PaymentController())->checkStatus($matches[1]);
             break;
         }
 

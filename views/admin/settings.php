@@ -272,13 +272,86 @@
             </div>
         </div>
 
+        <!-- SECTION 5: INTEGRASI MIDTRANS SNAP QRIS PAYMENT -->
+        <div class="bg-white rounded-2xl border border-stone-200 shadow-sm p-6 space-y-5">
+            <div class="border-b border-stone-100 pb-3 flex items-center justify-between">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-100 text-indigo-700 flex items-center justify-center font-bold text-sm">
+                        <i class="fa-solid fa-qrcode"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-base font-bold text-stone-900">Integrasi Pembayaran QRIS Otomatis (Midtrans Snap)</h2>
+                        <p class="text-xs text-stone-500">Menerima pembayaran QRIS langsung di kasir dengan auto-verifikasi lunas.</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-xs font-bold <?= !empty($settings['midtrans_server_key']) ? 'text-emerald-600 bg-emerald-50' : 'text-stone-400 bg-stone-100' ?> px-3 py-1 rounded-full border">
+                        <?= !empty($settings['midtrans_server_key']) ? '● Terkonfigurasi' : '○ Belum Aktif' ?>
+                    </span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Server Key *</label>
+                    <input 
+                        type="text" 
+                        name="midtrans_server_key" 
+                        value="<?= htmlspecialchars($settings['midtrans_server_key'] ?? '') ?>"
+                        placeholder="SB-Mid-server-xxxx / Mid-server-xxxx" 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                    >
+                    <span class="text-[10px] text-stone-400 mt-1 block">Dapat dilihat di Dashboard Midtrans > Settings > Access Keys.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Client Key *</label>
+                    <input 
+                        type="text" 
+                        name="midtrans_client_key" 
+                        value="<?= htmlspecialchars($settings['midtrans_client_key'] ?? '') ?>"
+                        placeholder="SB-Mid-client-xxxx / Mid-client-xxxx" 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-xs font-mono focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"
+                    >
+                    <span class="text-[10px] text-stone-400 mt-1 block">Digunakan oleh frontend Snap JS kasir.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Mode Lingkungan (Environment)</label>
+                    <select 
+                        name="midtrans_is_production" 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all">
+                        <option value="0" <?= ($settings['midtrans_is_production'] ?? '0') === '0' ? 'selected' : '' ?>>
+                            Sandbox (Simulasi / Uji Coba)
+                        </option>
+                        <option value="1" <?= ($settings['midtrans_is_production'] ?? '') === '1' ? 'selected' : '' ?>>
+                            Production (Transaksi Riil QRIS)
+                        </option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Webhook Notification URL</label>
+                    <div class="flex items-center gap-2">
+                        <input 
+                            type="text" 
+                            readonly 
+                            value="<?= (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on' ? 'https' : 'http') . '://' . ($_SERVER['HTTP_HOST'] ?? 'localhost:8008') . '/api/payment/webhook' ?>" 
+                            class="w-full px-3 py-2 bg-stone-100 border border-stone-200 rounded-xl text-xs font-mono text-stone-600 select-all"
+                        >
+                    </div>
+                    <span class="text-[10px] text-stone-400 mt-1 block">Salin URL ini ke Dashboard Midtrans > Settings > Configuration > Payment Notification URL.</span>
+                </div>
+            </div>
+        </div>
+
         <!-- Submit Button -->
         <div class="flex items-center justify-end gap-3 pt-4">
             <button 
                 type="submit" 
                 class="px-8 py-3.5 bg-brand-600 hover:bg-brand-700 text-white font-extrabold rounded-xl shadow-lg shadow-brand-600/30 hover:shadow-xl transition-all text-sm flex items-center gap-2">
                 <i class="fa-solid fa-floppy-disk"></i>
-                <span>Simpan Pengaturan Identitas Toko</span>
+                <span>Simpan Pengaturan Identitas Toko & Midtrans</span>
             </button>
         </div>
 

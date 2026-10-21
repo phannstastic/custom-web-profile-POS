@@ -15,6 +15,16 @@
         <link rel="icon" type="image/png" href="<?= $storeLogo ?>">
     <?php endif; ?>
 
+    <!-- Midtrans Snap JS (Sandbox / Production) -->
+    <?php
+        $isMidtransProd = ($settings['midtrans_is_production'] ?? '0') === '1';
+        $midtransClientKey = htmlspecialchars($settings['midtrans_client_key'] ?? '');
+        $snapJsUrl = $isMidtransProd 
+            ? 'https://app.midtrans.com/snap/snap.js' 
+            : 'https://app.sandbox.midtrans.com/snap/snap.js';
+    ?>
+    <script src="<?= $snapJsUrl ?>" data-client-key="<?= $midtransClientKey ?>"></script>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -362,17 +372,24 @@
                     </div>
                 </div>
 
-                <!-- Process Payment CTA Button -->
-                <button 
-                    @click="openPaymentModal()" 
-                    :disabled="cart.length === 0"
-                    class="w-full py-3.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-lg shadow-brand-600/30 hover:shadow-xl transition-all text-sm flex items-center justify-between">
-                    <span class="flex items-center gap-2">
-                        <i class="fa-solid fa-cash-register"></i>
-                        <span>Bayar Tunai / Cash</span>
-                    </span>
-                    <span class="font-mono-num text-sm bg-white/20 px-2 py-0.5 rounded-lg" x-text="formatRupiah(subtotal)"></span>
-                </button>
+                <!-- Process Payment CTA Buttons (Tunai & QRIS) -->
+                <div class="grid grid-cols-2 gap-2 pt-1">
+                    <button 
+                        @click="openPaymentModal()" 
+                        :disabled="cart.length === 0"
+                        class="py-3 px-3 bg-stone-900 hover:bg-black disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md transition-all text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-money-bill-wave text-emerald-400"></i>
+                        <span>Bayar Tunai</span>
+                    </button>
+
+                    <button 
+                        @click="payWithQris()" 
+                        :disabled="cart.length === 0 || isProcessing"
+                        class="py-3 px-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md shadow-brand-600/30 transition-all text-xs flex items-center justify-center gap-1.5">
+                        <i class="fa-solid fa-qrcode text-white"></i>
+                        <span x-text="isProcessing ? 'Membuat QRIS...' : 'Bayar QRIS'"></span>
+                    </button>
+                </div>
             </div>
 
         </aside>
@@ -634,6 +651,118 @@
                         }
                     } catch (err) {
                         alert('Koneksi terputus ke server.');
+                    } finally {
+                        this.isProcessing = false;
+                    }
+                },
+
+                async payWithQris() {
+                    if (this.cart.length === 0 || this.isProcessing) return;
+
+                    if (typeof window.snap === 'undefined') {
+                        alert('Midtrans Snap SDK belum termuat. Pastikan koneksi internet aktif.');
+                        return;
+                    }
+
+                    this.isProcessing = true;
+
+                    const payload = {
+                        customer_name: this.customerName,
+                        table_number: this.tableNumber,
+                        total_amount: this.subtotal,
+                        items: this.cart
+                    };
+
+                    try {
+                        const response = await fetch('/api/payment/create', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        const res = await response.json();
+
+                        if (!res.success) {
+                            alert('Gagal membuat transaksi QRIS: ' + (res.error || 'Server Key belum diatur.'));
+                            this.isProcessing = false;
+                            return;
+                        }
+
+                        const self = this;
+                        const invoiceNumber = res.invoice_number;
+
+                        // Buka Pop-up Snap Midtrans untuk Scan QRIS
+                        window.snap.pay(res.snap_token, {
+                            onSuccess: function(result) {
+                                self.onPaymentSettled(invoiceNumber);
+                            },
+                            onPending: function(result) {
+                                // Mulai polling otomatis mendeteksi ketika pelanggan selesai scan
+                                self.startStatusPolling(invoiceNumber);
+                            },
+                            onError: function(result) {
+                                alert('Pembayaran QRIS gagal atau dibatalkan.');
+                                self.isProcessing = false;
+                            },
+                            onClose: function() {
+                                // Kasir menutup popup Snap, tetap polling di background barangkali sedang dibayar
+                                self.startStatusPolling(invoiceNumber);
+                            }
+                        });
+
+                    } catch (err) {
+                        alert('Terjadi kesalahan koneksi ke server.');
+                        this.isProcessing = false;
+                    }
+                },
+
+                startStatusPolling(invoiceNumber) {
+                    let attempts = 0;
+                    const maxAttempts = 60; // Poll selama 3 menit (setiap 3 detik)
+                    const self = this;
+
+                    const pollInterval = setInterval(async () => {
+                        attempts++;
+                        if (attempts > maxAttempts) {
+                            clearInterval(pollInterval);
+                            self.isProcessing = false;
+                            return;
+                        }
+
+                        try {
+                            const res = await fetch('/api/payment/status/' + invoiceNumber);
+                            const data = await res.json();
+
+                            if (data.success && data.payment_status === 'paid') {
+                                clearInterval(pollInterval);
+                                self.onPaymentSettled(invoiceNumber);
+                            }
+                        } catch (e) {
+                            console.error('Polling error:', e);
+                        }
+                    }, 3000);
+                },
+
+                async onPaymentSettled(invoiceNumber) {
+                    try {
+                        const res = await fetch('/api/payment/status/' + invoiceNumber);
+                        const data = await res.json();
+
+                        if (data.success) {
+                            // Buka popup dialog cetak struk 58mm
+                            const popup = window.open(data.receipt_url, '_blank', 'width=400,height=600');
+                            if (popup) {
+                                popup.focus();
+                            }
+
+                            // Bersihkan keranjang kasir
+                            this.cart = [];
+                            this.customerName = 'Pelanggan';
+                            this.mobileTab = 'menu';
+                            alert('Pembayaran QRIS LUNAS! Nomor Nota: ' + invoiceNumber);
+                        }
+                    } catch (e) {
+                        console.error('Settled error:', e);
                     } finally {
                         this.isProcessing = false;
                     }

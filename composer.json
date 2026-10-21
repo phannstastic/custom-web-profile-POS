@@ -5,7 +5,8 @@
     "require": {
         "php": ">=8.2",
         "ext-pdo": "*",
-        "ext-pdo_sqlite": "*"
+        "ext-pdo_sqlite": "*",
+        "midtrans/midtrans-php": "^2.6"
     },
     "autoload": {
         "psr-4": {

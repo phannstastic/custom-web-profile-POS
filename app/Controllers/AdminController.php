@@ -97,7 +97,10 @@ class AdminController extends Controller
             'store_hours',
             'store_address',
             'receipt_footer',
-            'theme_primary_color'
+            'theme_primary_color',
+            'midtrans_server_key',
+            'midtrans_client_key',
+            'midtrans_is_production'
         ];
 
         $stmt = $db->prepare("INSERT INTO settings (key, value) VALUES (:key, :value) ON CONFLICT(key) DO UPDATE SET value = :value, updated_at = CURRENT_TIMESTAMP");

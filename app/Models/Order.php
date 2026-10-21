@@ -106,6 +106,105 @@ class Order extends Model
         }
     }
 
+    public function createPendingQrisOrder(array $orderData, array $items): array
+    {
+        $db = static::getDb();
+        $db->beginTransaction();
+
+        try {
+            $invoiceNumber = $this->generateInvoiceNumber();
+            $customerName = !empty($orderData['customer_name']) ? trim($orderData['customer_name']) : 'Pelanggan';
+            $tableNumber = !empty($orderData['table_number']) ? trim($orderData['table_number']) : 'Meja 01';
+            $totalAmount = (int) ($orderData['total_amount'] ?? 0);
+            $notes = !empty($orderData['notes']) ? trim($orderData['notes']) : null;
+
+            $stmtOrder = $db->prepare("
+                INSERT INTO orders (
+                    invoice_number, customer_name, table_number, total_amount, 
+                    payment_method, payment_status, cash_paid, cash_change, notes
+                ) VALUES (
+                    :invoice, :customer, :table_num, :total, 
+                    'qris', 'pending', 0, 0, :notes
+                )
+            ");
+
+            $stmtOrder->execute([
+                ':invoice'   => $invoiceNumber,
+                ':customer'  => $customerName,
+                ':table_num' => $tableNumber,
+                ':total'     => $totalAmount,
+                ':notes'     => $notes
+            ]);
+
+            $orderId = (int) $db->lastInsertId();
+
+            $stmtItem = $db->prepare("
+                INSERT INTO order_items (
+                    order_id, product_id, product_name, price, quantity, subtotal, notes
+                ) VALUES (
+                    :order_id, :product_id, :product_name, :price, :quantity, :subtotal, :notes
+                )
+            ");
+
+            foreach ($items as $item) {
+                $stmtItem->execute([
+                    ':order_id'     => $orderId,
+                    ':product_id'   => !empty($item['id']) ? (int) $item['id'] : null,
+                    ':product_name' => $item['name'],
+                    ':price'        => (int) $item['price'],
+                    ':quantity'     => (int) $item['qty'],
+                    ':subtotal'     => (int) ($item['price'] * $item['qty']),
+                    ':notes'        => !empty($item['notes']) ? trim($item['notes']) : null
+                ]);
+            }
+
+            $db->commit();
+
+            return [
+                'success' => true,
+                'order_id' => $orderId,
+                'invoice_number' => $invoiceNumber,
+                'customer_name' => $customerName,
+                'table_number' => $tableNumber,
+                'total_amount' => $totalAmount,
+                'created_at' => date('Y-m-d H:i:s')
+            ];
+
+        } catch (\Throwable $e) {
+            $db->rollBack();
+            return [
+                'success' => false,
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function setSnapToken(int $orderId, string $token): void
+    {
+        $stmt = static::getDb()->prepare("UPDATE orders SET snap_token = :token WHERE id = :id");
+        $stmt->execute([':token' => $token, ':id' => $orderId]);
+    }
+
+    public function updateStatusByInvoice(string $invoiceNumber, string $status): bool
+    {
+        $stmt = static::getDb()->prepare("
+            UPDATE orders 
+            SET payment_status = :status,
+                cash_paid = CASE WHEN :status = 'paid' THEN total_amount ELSE cash_paid END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE invoice_number = :invoice
+        ");
+        return $stmt->execute([':status' => $status, ':invoice' => $invoiceNumber]);
+    }
+
+    public function findByInvoice(string $invoiceNumber): ?array
+    {
+        $stmt = static::getDb()->prepare("SELECT * FROM orders WHERE invoice_number = :invoice LIMIT 1");
+        $stmt->execute([':invoice' => $invoiceNumber]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
+
     public function getOrderWithItems(int $orderId): ?array
     {
         $stmtOrder = static::getDb()->prepare("SELECT * FROM orders WHERE id = :id LIMIT 1");

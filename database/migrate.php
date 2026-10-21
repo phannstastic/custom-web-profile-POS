@@ -73,6 +73,7 @@ $db->exec("
         payment_status TEXT NOT NULL DEFAULT 'pending', -- 'pending', 'paid', 'cancelled'
         cash_paid INTEGER DEFAULT 0,
         cash_change INTEGER DEFAULT 0,
+        snap_token TEXT,
         notes TEXT,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
