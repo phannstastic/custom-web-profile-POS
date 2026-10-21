@@ -27,7 +27,7 @@ switch ($uri) {
         break;
 
     case '/pos':
-        echo "<h1>Halaman POS Kasir</h1><p>Fondasi siap. Akan diimplementasikan pada Issue #4 & #5.</p><a href='/'>Kembali ke Beranda</a>";
+        (new \App\Controllers\PosController())->index();
         break;
 
     // --- Admin Routes ---
