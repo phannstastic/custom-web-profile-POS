@@ -6,6 +6,17 @@ class Product extends Model
 {
     protected string $table = 'products';
 
+    public function getAllWithCategory(): array
+    {
+        $stmt = static::getDb()->query("
+            SELECT p.*, c.name as category_name, c.slug as category_slug
+            FROM products p
+            LEFT JOIN categories c ON p.category_id = c.id
+            ORDER BY p.is_available DESC, c.id ASC, p.id ASC
+        ");
+        return $stmt->fetchAll();
+    }
+
     public function getActiveWithCategory(): array
     {
         $stmt = static::getDb()->query("

@@ -12,7 +12,7 @@ abstract class Controller
         exit;
     }
 
-    protected function render(string $view, array $data = []): void
+    protected function render(string $view, array $data = [], ?string $layout = null): void
     {
         extract($data);
         $viewFile = dirname(__DIR__, 2) . "/views/{$view}.php";
@@ -21,6 +21,17 @@ abstract class Controller
             http_response_code(404);
             echo "View [{$view}] not found.";
             exit;
+        }
+
+        if ($layout !== null) {
+            $layoutFile = dirname(__DIR__, 2) . "/views/{$layout}.php";
+            if (file_exists($layoutFile)) {
+                ob_start();
+                require $viewFile;
+                $content = ob_get_clean();
+                require $layoutFile;
+                exit;
+            }
         }
 
         require $viewFile;

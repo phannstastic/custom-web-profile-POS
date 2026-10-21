@@ -21,7 +21,7 @@ switch ($uri) {
         break;
 
     case '/menu':
-        (new HomeController())->index();
+        (new HomeController())->menu();
         break;
 
     case '/pos':

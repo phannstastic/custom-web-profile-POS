@@ -104,12 +104,15 @@ echo "Menjalankan seeding data default...\n";
 $settings = [
     'store_name' => 'Pondok Makan Kang Naryo',
     'store_tagline' => 'Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap',
-    'store_address' => 'Jl. Kuliner Lezat No. 88, Yogyakarta',
+    'store_address' => 'Jl. Kuliner Lezat No. 88, Malioboro, Yogyakarta',
     'store_phone' => '081234567890',
+    'store_whatsapp' => '6281234567890',
+    'store_hours' => 'Setiap Hari: 10.00 - 22.00 WIB',
+    'store_maps_url' => 'https://maps.google.com/maps?q=Yogyakarta&t=&z=14&ie=UTF8&iwloc=&output=embed',
     'receipt_footer' => 'Terima Kasih Atas Kunjungan Anda! Selamat Menikmati.'
 ];
 
-$stmtSetting = $db->prepare("INSERT OR IGNORE INTO settings (key, value) VALUES (:key, :value)");
+$stmtSetting = $db->prepare("INSERT OR REPLACE INTO settings (key, value) VALUES (:key, :value)");
 foreach ($settings as $k => $v) {
     $stmtSetting->execute([':key' => $k, ':value' => $v]);
 }
@@ -225,6 +228,26 @@ $products = [
         'is_available' => 1,
         'is_featured' => 0
     ],
+    [
+        'category_slug' => 'makanan-utama',
+        'name' => 'Sop Iga Sapi Rempah Gurih',
+        'slug' => 'sop-iga-sapi-rempah',
+        'description' => 'Iga sapi pilihan dimasak empuk dengan kuah kaldu rempah bening gurih, wortel, dan kentang segar.',
+        'price' => 45000,
+        'image' => 'sop-iga.jpg',
+        'is_available' => 0, // HABIS (Demonstrasi kriteria selesai issue 2)
+        'is_featured' => 0
+    ],
+    [
+        'category_slug' => 'minuman-segar',
+        'name' => 'Jus Alpukat Kerok Kental',
+        'slug' => 'jus-alpukat-kerok',
+        'description' => 'Alpukat mentega asli disajikan kental dengan susu cokelat manis legit.',
+        'price' => 14000,
+        'image' => 'jus-alpukat.jpg',
+        'is_available' => 0, // HABIS (Demonstrasi kriteria selesai issue 2)
+        'is_featured' => 1
+    ]
 ];
 
 $stmtProduct = $db->prepare("
