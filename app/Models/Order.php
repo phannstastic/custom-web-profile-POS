@@ -221,4 +221,114 @@ class Order extends Model
 
         return $order;
     }
+
+    /**
+     * Hitung ringkasan penjualan (omset, cash vs qris, total transaksi) berdasarkan rentang tanggal
+     */
+    public function getSalesSummary(?string $startDate = null, ?string $endDate = null, ?string $paymentMethod = null, ?string $paymentStatus = null): array
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($startDate)) {
+            $where[] = "date(created_at) >= :start_date";
+            $params[':start_date'] = $startDate;
+        }
+
+        if (!empty($endDate)) {
+            $where[] = "date(created_at) <= :end_date";
+            $params[':end_date'] = $endDate;
+        }
+
+        if (!empty($paymentMethod) && $paymentMethod !== 'all') {
+            $where[] = "payment_method = :payment_method";
+            $params[':payment_method'] = $paymentMethod;
+        }
+
+        if (!empty($paymentStatus) && $paymentStatus !== 'all') {
+            $where[] = "payment_status = :payment_status";
+            $params[':payment_status'] = $paymentStatus;
+        }
+
+        $whereSql = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+
+        // Query metrik omset (khusus status 'paid' untuk pendapatan riil, serta total hitungan semua order)
+        $sql = "
+            SELECT 
+                COUNT(*) as total_transactions,
+                SUM(CASE WHEN payment_status = 'paid' THEN 1 ELSE 0 END) as total_paid_transactions,
+                SUM(CASE WHEN payment_status = 'paid' THEN total_amount ELSE 0 END) as total_revenue,
+                SUM(CASE WHEN payment_status = 'paid' AND payment_method = 'cash' THEN total_amount ELSE 0 END) as total_cash_revenue,
+                SUM(CASE WHEN payment_status = 'paid' AND payment_method = 'qris' THEN total_amount ELSE 0 END) as total_qris_revenue,
+                SUM(CASE WHEN payment_status = 'pending' THEN 1 ELSE 0 END) as total_pending_transactions,
+                SUM(CASE WHEN payment_status = 'cancelled' THEN 1 ELSE 0 END) as total_cancelled_transactions
+            FROM orders
+            {$whereSql}
+        ";
+
+        $stmt = static::getDb()->prepare($sql);
+        $stmt->execute($params);
+        $summary = $stmt->fetch();
+
+        return [
+            'total_transactions' => (int) ($summary['total_transactions'] ?? 0),
+            'total_paid_transactions' => (int) ($summary['total_paid_transactions'] ?? 0),
+            'total_revenue' => (int) ($summary['total_revenue'] ?? 0),
+            'total_cash_revenue' => (int) ($summary['total_cash_revenue'] ?? 0),
+            'total_qris_revenue' => (int) ($summary['total_qris_revenue'] ?? 0),
+            'total_pending_transactions' => (int) ($summary['total_pending_transactions'] ?? 0),
+            'total_cancelled_transactions' => (int) ($summary['total_cancelled_transactions'] ?? 0),
+        ];
+    }
+
+    /**
+     * Dapatkan daftar order dengan filter pencarian dan item-itemnya
+     */
+    public function getFilteredOrders(?string $startDate = null, ?string $endDate = null, ?string $paymentMethod = null, ?string $paymentStatus = null, ?string $search = null): array
+    {
+        $where = [];
+        $params = [];
+
+        if (!empty($startDate)) {
+            $where[] = "date(o.created_at) >= :start_date";
+            $params[':start_date'] = $startDate;
+        }
+
+        if (!empty($endDate)) {
+            $where[] = "date(o.created_at) <= :end_date";
+            $params[':end_date'] = $endDate;
+        }
+
+        if (!empty($paymentMethod) && $paymentMethod !== 'all') {
+            $where[] = "o.payment_method = :payment_method";
+            $params[':payment_method'] = $paymentMethod;
+        }
+
+        if (!empty($paymentStatus) && $paymentStatus !== 'all') {
+            $where[] = "o.payment_status = :payment_status";
+            $params[':payment_status'] = $paymentStatus;
+        }
+
+        if (!empty($search)) {
+            $where[] = "(o.invoice_number LIKE :search OR o.customer_name LIKE :search OR o.table_number LIKE :search)";
+            $params[':search'] = '%' . $search . '%';
+        }
+
+        $whereSql = !empty($where) ? "WHERE " . implode(" AND ", $where) : "";
+
+        $sql = "
+            SELECT o.*, 
+                   COUNT(oi.id) as total_items_count,
+                   GROUP_CONCAT(oi.product_name || ' (' || oi.quantity || 'x)', ', ') as items_summary
+            FROM orders o
+            LEFT JOIN order_items oi ON o.id = oi.order_id
+            {$whereSql}
+            GROUP BY o.id
+            ORDER BY o.created_at DESC, o.id DESC
+        ";
+
+        $stmt = static::getDb()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
 }

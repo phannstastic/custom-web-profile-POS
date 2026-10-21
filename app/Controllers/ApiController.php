@@ -36,4 +36,19 @@ class ApiController extends Controller
             'data' => $categories
         ]);
     }
+
+    public function orderDetail(int $id): void
+    {
+        $orderModel = new \App\Models\Order();
+        $order = $orderModel->getOrderWithItems($id);
+
+        if (!$order) {
+            $this->json(['success' => false, 'error' => 'Pesanan tidak ditemukan'], 404);
+        }
+
+        $this->json([
+            'success' => true,
+            'order' => $order
+        ]);
+    }
 }

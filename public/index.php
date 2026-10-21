@@ -79,6 +79,14 @@ switch ($uri) {
         (new AdminController())->updateSettings();
         break;
 
+    case '/admin/reports':
+        (new AdminController())->reports();
+        break;
+
+    case '/admin/reports/export':
+        (new AdminController())->exportCsv();
+        break;
+
     case '/admin/products':
         (new AdminController())->products();
         break;
@@ -119,6 +127,12 @@ switch ($uri) {
         // Cek dynamic route: /pos/receipt/{id}
         if (preg_match('#^/pos/receipt/(\d+)$#', $uri, $matches)) {
             (new \App\Controllers\PosController())->receipt((int) $matches[1]);
+            break;
+        }
+
+        // Cek dynamic route: /api/orders/detail/{id}
+        if (preg_match('#^/api/orders/detail/(\d+)$#', $uri, $matches)) {
+            (new \App\Controllers\ApiController())->orderDetail((int) $matches[1]);
             break;
         }
 

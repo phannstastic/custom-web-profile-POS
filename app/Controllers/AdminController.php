@@ -6,6 +6,7 @@ use App\Database\Auth;
 use App\Database\Uploader;
 use App\Models\Product;
 use App\Models\Category;
+use App\Models\Order;
 
 class AdminController extends Controller
 {
@@ -56,11 +57,17 @@ class AdminController extends Controller
         $products = $productModel->getAllWithCategory();
         $categories = $categoryModel->allOrdered();
 
+        $orderModel = new Order();
+        $todaySummary = $orderModel->getSalesSummary(date('Y-m-d'), date('Y-m-d'));
+        $recentOrders = array_slice($orderModel->getFilteredOrders(null, null, null, null, null), 0, 5);
+
         $this->render('admin/dashboard', [
             'title' => 'Dashboard Admin - Pondok Makan Kang Naryo',
             'currentUser' => Auth::user(),
             'products' => $products,
             'categories' => $categories,
+            'todaySummary' => $todaySummary,
+            'recentOrders' => $recentOrders,
             'adminActiveNav' => 'dashboard'
         ], 'layouts/admin');
     }
@@ -349,6 +356,109 @@ class AdminController extends Controller
         }
 
         header('Location: /admin/products');
+        exit;
+    }
+
+    public function reports(): void
+    {
+        Auth::requireAuth();
+
+        $startDate = $_GET['start_date'] ?? date('Y-m-d');
+        $endDate = $_GET['end_date'] ?? date('Y-m-d');
+        $paymentMethod = $_GET['payment_method'] ?? 'all';
+        $paymentStatus = $_GET['payment_status'] ?? 'all';
+        $search = trim($_GET['search'] ?? '');
+
+        $orderModel = new Order();
+        $summary = $orderModel->getSalesSummary($startDate, $endDate, $paymentMethod, $paymentStatus);
+        $orders = $orderModel->getFilteredOrders($startDate, $endDate, $paymentMethod, $paymentStatus, $search);
+
+        $this->render('admin/reports', [
+            'title' => 'Laporan Ringkasan Penjualan & Riwayat Transaksi - Admin',
+            'currentUser' => Auth::user(),
+            'adminActiveNav' => 'reports',
+            'summary' => $summary,
+            'orders' => $orders,
+            'filters' => [
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+                'payment_method' => $paymentMethod,
+                'payment_status' => $paymentStatus,
+                'search' => $search
+            ]
+        ], 'layouts/admin');
+    }
+
+    public function exportCsv(): void
+    {
+        Auth::requireAuth();
+
+        $startDate = $_GET['start_date'] ?? date('Y-m-d');
+        $endDate = $_GET['end_date'] ?? date('Y-m-d');
+        $paymentMethod = $_GET['payment_method'] ?? 'all';
+        $paymentStatus = $_GET['payment_status'] ?? 'all';
+        $search = trim($_GET['search'] ?? '');
+
+        $orderModel = new Order();
+        $orders = $orderModel->getFilteredOrders($startDate, $endDate, $paymentMethod, $paymentStatus, $search);
+
+        $filename = 'laporan-penjualan-' . $startDate . '-sd-' . $endDate . '.csv';
+
+        header('Content-Type: text/csv; charset=utf-8');
+        header('Content-Disposition: attachment; filename="' . $filename . '"');
+        header('Pragma: no-cache');
+        header('Expires: 0');
+
+        $output = fopen('php://output', 'w');
+
+        // UTF-8 BOM untuk kompatibilitas Excel
+        fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
+
+        // Header CSV
+        fputcsv($output, [
+            'No',
+            'No. Nota / Invoice',
+            'Tanggal & Waktu',
+            'Nama Pelanggan',
+            'No. Meja',
+            'Metode Pembayaran',
+            'Status Transaksi',
+            'Daftar Item Menu',
+            'Total Belanja (Rp)',
+            'Uang Diterima (Rp)',
+            'Kembalian (Rp)',
+            'Catatan Pesanan'
+        ]);
+
+        $no = 1;
+        $totalRevenue = 0;
+
+        foreach ($orders as $order) {
+            if ($order['payment_status'] === 'paid') {
+                $totalRevenue += (int) $order['total_amount'];
+            }
+
+            fputcsv($output, [
+                $no++,
+                $order['invoice_number'],
+                $order['created_at'],
+                $order['customer_name'] ?? 'Pelanggan',
+                $order['table_number'] ?? '-',
+                strtoupper($order['payment_method']),
+                strtoupper($order['payment_status']),
+                $order['items_summary'] ?? '-',
+                (int) $order['total_amount'],
+                (int) $order['cash_paid'],
+                (int) $order['cash_change'],
+                $order['notes'] ?? '-'
+            ]);
+        }
+
+        // Baris ringkasan
+        fputcsv($output, []);
+        fputcsv($output, ['', '', '', '', '', '', 'TOTAL OMSET (LUNAS)', '', $totalRevenue, '', '', '']);
+
+        fclose($output);
         exit;
     }
 }

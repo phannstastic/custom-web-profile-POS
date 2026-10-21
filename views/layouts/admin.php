@@ -75,6 +75,12 @@
                     <span>Kelola Kategori</span>
                 </a>
 
+                <a href="/admin/reports" 
+                   class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors <?= ($adminActiveNav ?? '') === 'reports' ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30' : 'hover:bg-stone-800 text-stone-300' ?>">
+                    <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i>
+                    <span>Laporan Penjualan</span>
+                </a>
+
                 <a href="/admin/settings" 
                    class="flex items-center gap-3 px-3.5 py-2.5 rounded-xl transition-colors <?= ($adminActiveNav ?? '') === 'settings' ? 'bg-brand-600 text-white shadow-md shadow-brand-600/30' : 'hover:bg-stone-800 text-stone-300' ?>">
                     <i class="fa-solid fa-sliders w-5 text-center"></i>
