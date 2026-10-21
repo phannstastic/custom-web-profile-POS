@@ -680,22 +680,23 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION MODERN (Mulus & Non-Blocking) -->
+    <!-- TOAST NOTIFICATION MODERN (Di Atas Tengah, Bebas Menghalangi Tombol Pembayaran) -->
     <div 
         x-cloak 
         x-show="toast.visible" 
         x-transition:enter="transition ease-out duration-300"
-        x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+        x-transition:enter-start="opacity-0 -translate-y-4 scale-95"
         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
         x-transition:leave="transition ease-in duration-200"
         x-transition:leave-start="opacity-100 translate-y-0 scale-100"
-        x-transition:leave-end="opacity-0 translate-y-3 scale-95"
-        class="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold"
+        x-transition:leave-end="opacity-0 -translate-y-4 scale-95"
+        @click="toast.visible = false"
+        class="fixed top-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2.5 px-4 py-2.5 rounded-2xl shadow-2xl border text-xs font-bold cursor-pointer transition-all hover:scale-105 select-none"
         :class="{
-            'bg-stone-900 text-white border-stone-800': toast.type === 'info',
-            'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/20': toast.type === 'success',
-            'bg-red-600 text-white border-red-500 shadow-red-600/20': toast.type === 'error',
-            'bg-amber-500 text-white border-amber-400 shadow-amber-500/20': toast.type === 'warning'
+            'bg-stone-900/95 text-white border-stone-700/80 backdrop-blur-md shadow-stone-950/30': toast.type === 'info',
+            'bg-emerald-600/95 text-white border-emerald-500/80 backdrop-blur-md shadow-emerald-950/30': toast.type === 'success',
+            'bg-red-600/95 text-white border-red-500/80 backdrop-blur-md shadow-red-950/30': toast.type === 'error',
+            'bg-amber-500/95 text-white border-amber-400/80 backdrop-blur-md shadow-amber-950/30': toast.type === 'warning'
         }">
         <i :class="{
             'fa-solid fa-circle-info': toast.type === 'info',
@@ -704,6 +705,7 @@
             'fa-solid fa-bell': toast.type === 'warning'
         }" class="text-sm"></i>
         <span x-text="toast.message"></span>
+        <i class="fa-solid fa-xmark text-[10px] ml-1.5 opacity-60 hover:opacity-100"></i>
     </div>
 
     <!-- Alpine.js POS State Controller Script -->
