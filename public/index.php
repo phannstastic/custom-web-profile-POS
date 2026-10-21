@@ -5,6 +5,8 @@ require_once __DIR__ . '/../vendor/autoload.php';
 use App\Controllers\HomeController;
 use App\Controllers\ApiController;
 
+use App\Controllers\AdminController;
+
 // Normalize request URI
 $uri = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH);
 $uri = rtrim($uri, '/');
@@ -28,8 +30,57 @@ switch ($uri) {
         echo "<h1>Halaman POS Kasir</h1><p>Fondasi siap. Akan diimplementasikan pada Issue #4 & #5.</p><a href='/'>Kembali ke Beranda</a>";
         break;
 
+    // --- Admin Routes ---
     case '/admin':
-        echo "<h1>Halaman Admin & Manajemen Produk</h1><p>Fondasi siap. Akan diimplementasikan pada Issue #3.</p><a href='/'>Kembali ke Beranda</a>";
+        (new AdminController())->dashboard();
+        break;
+
+    case '/admin/login':
+        (new AdminController())->login();
+        break;
+
+    case '/admin/logout':
+        (new AdminController())->logout();
+        break;
+
+    case '/admin/categories':
+        (new AdminController())->categories();
+        break;
+
+    case '/admin/categories/create':
+        (new AdminController())->createCategory();
+        break;
+
+    case '/admin/categories/update':
+        (new AdminController())->updateCategory();
+        break;
+
+    case '/admin/categories/delete':
+        (new AdminController())->deleteCategory();
+        break;
+
+    case '/admin/products':
+        (new AdminController())->products();
+        break;
+
+    case '/admin/products/create':
+        (new AdminController())->createProduct();
+        break;
+
+    case '/admin/products/update':
+        (new AdminController())->updateProduct();
+        break;
+
+    case '/admin/products/toggle-availability':
+        (new AdminController())->toggleAvailability();
+        break;
+
+    case '/admin/products/toggle-featured':
+        (new AdminController())->toggleFeatured();
+        break;
+
+    case '/admin/products/delete':
+        (new AdminController())->deleteProduct();
         break;
 
     case '/api/health':

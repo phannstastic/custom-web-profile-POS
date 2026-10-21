@@ -28,4 +28,107 @@ class Product extends Model
         ");
         return $stmt->fetchAll();
     }
+
+    public function create(array $data): bool
+    {
+        $name = trim($data['name']);
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+        $baseSlug = $slug;
+        $counter = 1;
+        while ($this->findBySlug($slug)) {
+            $slug = "{$baseSlug}-{$counter}";
+            $counter++;
+        }
+
+        $stmt = static::getDb()->prepare("
+            INSERT INTO products (category_id, name, slug, description, price, image, is_available, is_featured)
+            VALUES (:category_id, :name, :slug, :description, :price, :image, :is_available, :is_featured)
+        ");
+
+        return $stmt->execute([
+            ':category_id'  => !empty($data['category_id']) ? (int) $data['category_id'] : null,
+            ':name'         => $name,
+            ':slug'         => $slug,
+            ':description'  => $data['description'] ?? null,
+            ':price'        => (int) ($data['price'] ?? 0),
+            ':image'        => $data['image'] ?? null,
+            ':is_available' => isset($data['is_available']) ? (int) $data['is_available'] : 1,
+            ':is_featured'  => isset($data['is_featured']) ? (int) $data['is_featured'] : 0,
+        ]);
+    }
+
+    public function updateProduct(int $id, array $data): bool
+    {
+        $name = trim($data['name']);
+        $slug = strtolower(trim(preg_replace('/[^A-Za-z0-9-]+/', '-', $name)));
+
+        $sql = "
+            UPDATE products 
+            SET category_id = :category_id,
+                name = :name,
+                slug = :slug,
+                description = :description,
+                price = :price,
+                is_available = :is_available,
+                is_featured = :is_featured,
+                updated_at = CURRENT_TIMESTAMP
+        ";
+
+        $params = [
+            ':category_id'  => !empty($data['category_id']) ? (int) $data['category_id'] : null,
+            ':name'         => $name,
+            ':slug'         => $slug,
+            ':description'  => $data['description'] ?? null,
+            ':price'        => (int) ($data['price'] ?? 0),
+            ':is_available' => isset($data['is_available']) ? (int) $data['is_available'] : 1,
+            ':is_featured'  => isset($data['is_featured']) ? (int) $data['is_featured'] : 0,
+            ':id'           => $id
+        ];
+
+        if (!empty($data['image'])) {
+            $sql .= ", image = :image ";
+            $params[':image'] = $data['image'];
+        }
+
+        $sql .= " WHERE id = :id";
+
+        $stmt = static::getDb()->prepare($sql);
+        return $stmt->execute($params);
+    }
+
+    public function toggleAvailability(int $id): bool
+    {
+        $stmt = static::getDb()->prepare("
+            UPDATE products 
+            SET is_available = CASE WHEN is_available = 1 THEN 0 ELSE 1 END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+        ");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    public function toggleFeatured(int $id): bool
+    {
+        $stmt = static::getDb()->prepare("
+            UPDATE products 
+            SET is_featured = CASE WHEN is_featured = 1 THEN 0 ELSE 1 END,
+                updated_at = CURRENT_TIMESTAMP
+            WHERE id = :id
+        ");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    public function delete(int $id): bool
+    {
+        $stmt = static::getDb()->prepare("DELETE FROM products WHERE id = :id");
+        return $stmt->execute([':id' => $id]);
+    }
+
+    public function findBySlug(string $slug): ?array
+    {
+        $stmt = static::getDb()->prepare("SELECT * FROM products WHERE slug = :slug LIMIT 1");
+        $stmt->execute([':slug' => $slug]);
+        $row = $stmt->fetch();
+        return $row ?: null;
+    }
 }
