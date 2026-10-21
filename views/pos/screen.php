@@ -210,16 +210,24 @@
                     <template x-for="product in filteredProducts" :key="product.id">
                         <div 
                             @click="addToCart(product)"
-                            class="group bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-brand-500 active:scale-95 transition-all duration-150 p-3.5 flex flex-col justify-between cursor-pointer select-none">
+                            class="group bg-white rounded-2xl border border-stone-200/90 shadow-xs hover:shadow-md hover:border-brand-500 active:scale-95 transition-all duration-150 p-3.5 flex flex-col justify-between cursor-pointer select-none relative overflow-hidden">
                             
-                            <!-- Product Visual / Icon -->
+                            <!-- Product Visual & Thumbnail -->
                             <div>
                                 <div class="flex items-center justify-between mb-2">
                                     <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500 bg-stone-100 px-2 py-0.5 rounded-md line-clamp-1" x-text="product.category_name || 'Menu'"></span>
                                     <template x-if="getItemQtyInCart(product.id) > 0">
-                                        <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-brand-600 text-white text-[11px] font-extrabold shadow-sm" x-text="getItemQtyInCart(product.id)"></span>
+                                        <span class="inline-flex items-center justify-center min-w-[20px] h-5 px-1.5 rounded-full bg-brand-600 text-white text-[11px] font-extrabold shadow-sm" x-text="getItemQtyInCart(product.id)"></span>
                                     </template>
                                 </div>
+
+                                <!-- Optional Image Thumbnail -->
+                                <template x-if="product.image">
+                                    <div class="w-full h-28 mb-2.5 rounded-xl overflow-hidden bg-stone-100 relative">
+                                        <img :src="'/assets/images/products/' + product.image" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                    </div>
+                                </template>
+
                                 <h3 class="text-sm font-bold text-stone-900 group-hover:text-brand-600 transition-colors leading-snug line-clamp-2" x-text="product.name"></h3>
                                 <p class="text-[11px] text-stone-400 mt-1 line-clamp-2" x-text="product.description || ''"></p>
                             </div>
@@ -264,10 +272,10 @@
                 </div>
 
                 <button 
-                    @click="resetCart()" 
+                    @click="showConfirmResetModal = true" 
                     :disabled="cart.length === 0"
                     title="Kosongkan seluruh keranjang"
-                    class="px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:pointer-events-none rounded-lg transition-colors flex items-center gap-1">
+                    class="px-2.5 py-1.5 text-xs font-bold text-red-600 hover:bg-red-50 disabled:opacity-30 disabled:pointer-events-none rounded-lg transition-colors flex items-center gap-1 cursor-pointer">
                     <i class="fa-solid fa-trash-can text-[11px]"></i>
                     <span>Reset</span>
                 </button>
@@ -550,6 +558,126 @@
         </div>
     </div>
 
+    <!-- MODAL SUKSES PEMBAYARAN QRIS / TRANSAKSI MODERN (Menggantikan Alert Default) -->
+    <div 
+        x-cloak 
+        x-show="showSuccessModal" 
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-stone-900/70 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95">
+        
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-stone-200 relative overflow-hidden">
+            <!-- Background glow -->
+            <div class="w-32 h-32 bg-emerald-100 rounded-full blur-2xl absolute -top-10 -right-10 pointer-events-none"></div>
+
+            <div class="w-16 h-16 rounded-2xl bg-emerald-500 text-white flex items-center justify-center text-3xl mx-auto shadow-lg shadow-emerald-500/30 animate-bounce">
+                <i class="fa-solid fa-check"></i>
+            </div>
+
+            <h3 class="text-xl font-extrabold text-stone-900 mt-4 tracking-tight">Pembayaran Lunas!</h3>
+            <p class="text-xs text-stone-500 mt-1">Transaksi QRIS berhasil diverifikasi otomatis oleh sistem Midtrans.</p>
+
+            <div class="bg-stone-50 rounded-2xl p-3.5 my-4 border border-stone-100 text-left space-y-1.5 text-xs">
+                <div class="flex justify-between">
+                    <span class="text-stone-400 font-semibold">Nomor Nota:</span>
+                    <span class="font-mono font-bold text-stone-900" x-text="successInvoiceNumber"></span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-400 font-semibold">Metode:</span>
+                    <span class="font-bold text-blue-600 uppercase">QRIS Otomatis</span>
+                </div>
+                <div class="flex justify-between">
+                    <span class="text-stone-400 font-semibold">Status:</span>
+                    <span class="font-bold text-emerald-600 uppercase">SETTLEMENT (Lunas)</span>
+                </div>
+            </div>
+
+            <div class="space-y-2">
+                <a 
+                    :href="successReceiptUrl" 
+                    target="_blank" 
+                    @click="showSuccessModal = false"
+                    class="w-full py-3 px-4 bg-brand-600 hover:bg-brand-700 text-white text-xs font-extrabold rounded-xl shadow-md shadow-brand-600/20 transition-all flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-print"></i>
+                    <span>Cetak Nota Kasir 58mm</span>
+                </a>
+
+                <button 
+                    type="button" 
+                    @click="showSuccessModal = false" 
+                    class="w-full py-2.5 px-4 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-bold rounded-xl transition-colors">
+                    Selesai & Transaksi Baru
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL KONFIRMASI RESET KERANJANG MODERN -->
+    <div 
+        x-cloak 
+        x-show="showConfirmResetModal" 
+        class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center p-4 bg-stone-900/60 backdrop-blur-sm"
+        x-transition:enter="transition ease-out duration-200"
+        x-transition:enter-start="opacity-0 scale-95"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="transition ease-in duration-150"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-95">
+        
+        <div class="bg-white rounded-3xl max-w-sm w-full p-6 text-center shadow-2xl border border-stone-200">
+            <div class="w-14 h-14 rounded-2xl bg-red-100 text-red-600 flex items-center justify-center text-2xl mx-auto mb-3">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <h3 class="text-lg font-bold text-stone-900">Kosongkan Keranjang?</h3>
+            <p class="text-xs text-stone-500 mt-1">Semua menu pesanan yang telah dipilih akan dihapus dari layar kasir.</p>
+
+            <div class="flex items-center gap-3 mt-6">
+                <button 
+                    type="button" 
+                    @click="showConfirmResetModal = false" 
+                    class="w-1/2 py-2.5 rounded-xl border border-stone-300 text-stone-600 text-xs font-bold hover:bg-stone-50 transition-colors">
+                    Batal
+                </button>
+                <button 
+                    type="button" 
+                    @click="cart = []; showConfirmResetModal = false; showToast('Keranjang kasir telah dikosongkan', 'info')" 
+                    class="w-1/2 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold shadow-md shadow-red-600/20 transition-all">
+                    Ya, Kosongkan
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION MODERN (Mulus & Non-Blocking) -->
+    <div 
+        x-cloak 
+        x-show="toast.visible" 
+        x-transition:enter="transition ease-out duration-300"
+        x-transition:enter-start="opacity-0 translate-y-3 scale-95"
+        x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+        x-transition:leave="transition ease-in duration-200"
+        x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+        x-transition:leave-end="opacity-0 translate-y-3 scale-95"
+        class="fixed bottom-5 right-5 z-50 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border text-xs font-bold"
+        :class="{
+            'bg-stone-900 text-white border-stone-800': toast.type === 'info',
+            'bg-emerald-600 text-white border-emerald-500 shadow-emerald-600/20': toast.type === 'success',
+            'bg-red-600 text-white border-red-500 shadow-red-600/20': toast.type === 'error',
+            'bg-amber-500 text-white border-amber-400 shadow-amber-500/20': toast.type === 'warning'
+        }">
+        <i :class="{
+            'fa-solid fa-circle-info': toast.type === 'info',
+            'fa-solid fa-circle-check': toast.type === 'success',
+            'fa-solid fa-triangle-exclamation': toast.type === 'error',
+            'fa-solid fa-bell': toast.type === 'warning'
+        }" class="text-sm"></i>
+        <span x-text="toast.message"></span>
+    </div>
+
     <!-- Alpine.js POS State Controller Script -->
     <script>
         function posApp() {
@@ -571,6 +699,28 @@
                 showPaymentModal: false,
                 cashGiven: 0,
                 isProcessing: false,
+
+                // Modern UI Enhancements (Toast & Custom Dialogs)
+                showSuccessModal: false,
+                successInvoiceNumber: '',
+                successReceiptUrl: '',
+                showConfirmResetModal: false,
+                toast: {
+                    visible: false,
+                    message: '',
+                    type: 'info',
+                    timer: null
+                },
+
+                showToast(message, type = 'info') {
+                    if (this.toast.timer) clearTimeout(this.toast.timer);
+                    this.toast.message = message;
+                    this.toast.type = type;
+                    this.toast.visible = true;
+                    this.toast.timer = setTimeout(() => {
+                        this.toast.visible = false;
+                    }, 3500);
+                },
 
                 get filteredProducts() {
                     return this.products.filter(item => {
@@ -679,11 +829,12 @@
 
                             // Kembali ke tab menu di mobile jika sebelumnya di cart
                             this.mobileTab = 'menu';
+                            this.showToast('Transaksi tunai berhasil disimpan!', 'success');
                         } else {
-                            alert('Gagal menyimpan transaksi: ' + (res.error || 'Terjadi kesalahan sistem.'));
+                            this.showToast('Gagal menyimpan transaksi: ' + (res.error || 'Terjadi kesalahan sistem.'), 'error');
                         }
                     } catch (err) {
-                        alert('Koneksi terputus ke server.');
+                        this.showToast('Koneksi terputus ke server.', 'error');
                     } finally {
                         this.isProcessing = false;
                     }
@@ -693,7 +844,7 @@
                     if (this.cart.length === 0 || this.isProcessing) return;
 
                     if (typeof window.snap === 'undefined') {
-                        alert('Midtrans Snap SDK belum termuat. Pastikan koneksi internet aktif.');
+                        this.showToast('Midtrans Snap SDK belum termuat. Pastikan koneksi internet aktif.', 'warning');
                         return;
                     }
 
@@ -716,7 +867,7 @@
                         const res = await response.json();
 
                         if (!res.success) {
-                            alert('Gagal membuat transaksi QRIS: ' + (res.error || 'Server Key belum diatur.'));
+                            this.showToast('Gagal membuat transaksi QRIS: ' + (res.error || 'Server Key belum diatur.'), 'error');
                             this.isProcessing = false;
                             return;
                         }
@@ -731,20 +882,22 @@
                             },
                             onPending: function(result) {
                                 // Mulai polling otomatis mendeteksi ketika pelanggan selesai scan
+                                self.showToast('Menunggu pembayaran QRIS dari pelanggan...', 'info');
                                 self.startStatusPolling(invoiceNumber);
                             },
                             onError: function(result) {
-                                alert('Pembayaran QRIS gagal atau dibatalkan.');
+                                self.showToast('Pembayaran QRIS gagal atau dibatalkan.', 'error');
                                 self.isProcessing = false;
                             },
                             onClose: function() {
                                 // Kasir menutup popup Snap, tetap polling di background barangkali sedang dibayar
+                                self.showToast('Popup ditutup. Menunggu verifikasi pembayaran...', 'info');
                                 self.startStatusPolling(invoiceNumber);
                             }
                         });
 
                     } catch (err) {
-                        alert('Terjadi kesalahan koneksi ke server.');
+                        this.showToast('Terjadi kesalahan koneksi ke server.', 'error');
                         this.isProcessing = false;
                     }
                 },
@@ -782,17 +935,16 @@
                         const data = await res.json();
 
                         if (data.success) {
-                            // Buka popup dialog cetak struk 58mm
-                            const popup = window.open(data.receipt_url, '_blank', 'width=400,height=600');
-                            if (popup) {
-                                popup.focus();
-                            }
-
                             // Bersihkan keranjang kasir
                             this.cart = [];
                             this.customerName = 'Pelanggan';
                             this.mobileTab = 'menu';
-                            alert('Pembayaran QRIS LUNAS! Nomor Nota: ' + invoiceNumber);
+
+                            // Buka Modal Sukses Modern
+                            this.successInvoiceNumber = invoiceNumber;
+                            this.successReceiptUrl = data.receipt_url;
+                            this.showSuccessModal = true;
+                            this.showToast('Pembayaran QRIS LUNAS!', 'success');
                         }
                     } catch (e) {
                         console.error('Settled error:', e);
