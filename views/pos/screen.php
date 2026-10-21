@@ -425,10 +425,20 @@
 
                     <button 
                         @click="payWithQris()" 
-                        :disabled="cart.length === 0 || isProcessing"
-                        class="py-3 px-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md shadow-brand-600/30 transition-all text-xs flex items-center justify-center gap-1.5">
-                        <i class="fa-solid fa-qrcode text-white"></i>
-                        <span x-text="isProcessing ? 'Membuat QRIS...' : 'Bayar QRIS'"></span>
+                        :disabled="cart.length === 0 || isProcessingQris"
+                        class="py-3 px-3 bg-gradient-to-r from-brand-600 to-amber-600 hover:from-brand-700 hover:to-amber-700 disabled:opacity-40 disabled:cursor-not-allowed text-white font-extrabold rounded-xl shadow-md shadow-brand-600/30 transition-all text-xs flex items-center justify-center gap-1.5 cursor-pointer">
+                        <template x-if="!isProcessingQris">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-qrcode text-white"></i>
+                                <span>Bayar QRIS</span>
+                            </span>
+                        </template>
+                        <template x-if="isProcessingQris">
+                            <span class="flex items-center gap-1.5">
+                                <i class="fa-solid fa-spinner animate-spin text-white"></i>
+                                <span>Menunggu QRIS...</span>
+                            </span>
+                        </template>
                     </button>
                 </div>
             </div>
@@ -530,7 +540,7 @@
                 <button 
                     type="button" 
                     @click="showPaymentModal = false" 
-                    :disabled="isProcessing"
+                    :disabled="isProcessingCash"
                     class="w-1/3 py-3 rounded-xl border border-stone-300 text-stone-600 text-xs font-bold hover:bg-stone-50 transition-colors">
                     Batal
                 </button>
@@ -538,15 +548,15 @@
                 <button 
                     type="button" 
                     @click="processCashPayment()" 
-                    :disabled="cashGiven < subtotal || isProcessing"
+                    :disabled="cashGiven < subtotal || isProcessingCash"
                     class="w-2/3 py-3 px-4 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 disabled:cursor-not-allowed text-white text-xs font-extrabold rounded-xl shadow-lg shadow-emerald-600/30 transition-all flex items-center justify-center gap-2">
-                    <template x-if="!isProcessing">
+                    <template x-if="!isProcessingCash">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-print"></i>
                             <span>Bayar & Cetak Nota (58mm)</span>
                         </span>
                     </template>
-                    <template x-if="isProcessing">
+                    <template x-if="isProcessingCash">
                         <span class="flex items-center gap-2">
                             <i class="fa-solid fa-spinner animate-spin"></i>
                             <span>Menyimpan Transaksi...</span>
@@ -710,10 +720,12 @@
                 // Cart state
                 cart: [],
 
-                // Cash Payment Modal State
+                // Payment Processing States
                 showPaymentModal: false,
                 cashGiven: 0,
-                isProcessing: false,
+                isProcessingCash: false,
+                isProcessingQris: false,
+                activePollInterval: null,
 
                 // Modern UI Enhancements (Toast & Custom Dialogs)
                 showSuccessModal: false,
@@ -812,9 +824,9 @@
                 },
 
                 async processCashPayment() {
-                    if (this.cashGiven < this.subtotal || this.isProcessing) return;
+                    if (this.cashGiven < this.subtotal || this.isProcessingCash) return;
 
-                    this.isProcessing = true;
+                    this.isProcessingCash = true;
 
                     const payload = {
                         customer_name: this.customerName,
@@ -862,19 +874,22 @@
                     } catch (err) {
                         this.showToast('Koneksi terputus ke server.', 'error');
                     } finally {
-                        this.isProcessing = false;
+                        this.isProcessingCash = false;
                     }
                 },
 
                 async payWithQris() {
-                    if (this.cart.length === 0 || this.isProcessing) return;
+                    if (this.cart.length === 0 || this.isProcessingQris) return;
 
                     if (typeof window.snap === 'undefined') {
                         this.showToast('Midtrans Snap SDK belum termuat. Pastikan koneksi internet aktif.', 'warning');
                         return;
                     }
 
-                    this.isProcessing = true;
+                    this.isProcessingQris = true;
+
+                    // Hentikan polling lama jika ada
+                    this.stopStatusPolling();
 
                     const payload = {
                         customer_name: this.customerName,
@@ -894,7 +909,7 @@
 
                         if (!res.success) {
                             this.showToast('Gagal membuat transaksi QRIS: ' + (res.error || 'Server Key belum diatur.'), 'error');
-                            this.isProcessing = false;
+                            this.isProcessingQris = false;
                             return;
                         }
 
@@ -904,6 +919,7 @@
                         // Buka Pop-up Snap Midtrans untuk Scan QRIS
                         window.snap.pay(res.snap_token, {
                             onSuccess: function(result) {
+                                self.stopStatusPolling();
                                 self.onPaymentSettled(invoiceNumber);
                             },
                             onPending: function(result) {
@@ -912,32 +928,43 @@
                                 self.startStatusPolling(invoiceNumber);
                             },
                             onError: function(result) {
+                                self.stopStatusPolling();
                                 self.showToast('Pembayaran QRIS gagal atau dibatalkan.', 'error');
-                                self.isProcessing = false;
+                                self.isProcessingQris = false;
                             },
                             onClose: function() {
-                                // Kasir menutup popup Snap, tetap polling di background barangkali sedang dibayar
-                                self.showToast('Popup ditutup. Menunggu verifikasi pembayaran...', 'info');
-                                self.startStatusPolling(invoiceNumber);
+                                // Kasir menutup popup Snap dengan tombol [X] -> reset tombol agar bisa diklik kembali
+                                self.stopStatusPolling();
+                                self.isProcessingQris = false;
+                                self.showToast('Pembayaran QRIS ditutup.', 'info');
                             }
                         });
 
                     } catch (err) {
                         this.showToast('Terjadi kesalahan koneksi ke server.', 'error');
-                        this.isProcessing = false;
+                        this.isProcessingQris = false;
+                    }
+                },
+
+                stopStatusPolling() {
+                    if (this.activePollInterval) {
+                        clearInterval(this.activePollInterval);
+                        this.activePollInterval = null;
                     }
                 },
 
                 startStatusPolling(invoiceNumber) {
+                    this.stopStatusPolling();
+
                     let attempts = 0;
                     const maxAttempts = 60; // Poll selama 3 menit (setiap 3 detik)
                     const self = this;
 
-                    const pollInterval = setInterval(async () => {
+                    this.activePollInterval = setInterval(async () => {
                         attempts++;
                         if (attempts > maxAttempts) {
-                            clearInterval(pollInterval);
-                            self.isProcessing = false;
+                            self.stopStatusPolling();
+                            self.isProcessingQris = false;
                             return;
                         }
 
@@ -946,7 +973,7 @@
                             const data = await res.json();
 
                             if (data.success && data.payment_status === 'paid') {
-                                clearInterval(pollInterval);
+                                self.stopStatusPolling();
                                 self.onPaymentSettled(invoiceNumber);
                             }
                         } catch (e) {
@@ -977,7 +1004,7 @@
                     } catch (e) {
                         console.error('Settled error:', e);
                     } finally {
-                        this.isProcessing = false;
+                        this.isProcessingQris = false;
                     }
                 },
 
