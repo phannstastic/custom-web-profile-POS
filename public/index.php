@@ -59,6 +59,14 @@ switch ($uri) {
         (new AdminController())->deleteCategory();
         break;
 
+    case '/admin/settings':
+        (new AdminController())->settings();
+        break;
+
+    case '/admin/settings/update':
+        (new AdminController())->updateSettings();
+        break;
+
     case '/admin/products':
         (new AdminController())->products();
         break;

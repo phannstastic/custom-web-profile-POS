@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= htmlspecialchars($title ?? 'Pondok Makan Kang Naryo') ?></title>
+    <?php
+        $primaryColor = !empty($settings['theme_primary_color']) ? htmlspecialchars($settings['theme_primary_color']) : '#ea580c';
+        $storeLogo = !empty($settings['store_logo']) && file_exists(dirname(__DIR__, 2) . '/public/assets/uploads/' . $settings['store_logo']) 
+                     ? '/assets/uploads/' . htmlspecialchars($settings['store_logo']) 
+                     : null;
+    ?>
+    <?php if ($storeLogo): ?>
+        <link rel="icon" type="image/png" href="<?= $storeLogo ?>">
+    <?php endif; ?>
+
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -12,13 +22,13 @@
                 extend: {
                     colors: {
                         brand: {
-                            50: '#fff7ed',
-                            100: '#ffedd5',
-                            500: '#f97316',
-                            600: '#ea580c',
-                            700: '#c2410c',
-                            800: '#9a3412',
-                            900: '#7c2d12',
+                            50: 'color-mix(in srgb, <?= $primaryColor ?> 10%, white)',
+                            100: 'color-mix(in srgb, <?= $primaryColor ?> 20%, white)',
+                            500: '<?= $primaryColor ?>',
+                            600: '<?= $primaryColor ?>',
+                            700: 'color-mix(in srgb, <?= $primaryColor ?> 85%, black)',
+                            800: 'color-mix(in srgb, <?= $primaryColor ?> 70%, black)',
+                            900: 'color-mix(in srgb, <?= $primaryColor ?> 55%, black)',
                         }
                     }
                 }
@@ -34,6 +44,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --color-primary: <?= $primaryColor ?>;
+        }
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
         }
@@ -44,9 +57,12 @@
             -webkit-backdrop-filter: blur(10px);
         }
         .text-gradient {
-            background: linear-gradient(135deg, #ea580c, #c2410c);
+            background: linear-gradient(135deg, <?= $primaryColor ?>, color-mix(in srgb, <?= $primaryColor ?> 80%, black));
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
+        }
+        .bg-theme-primary {
+            background-color: <?= $primaryColor ?> !important;
         }
     </style>
 </head>
@@ -55,15 +71,19 @@
     <!-- Navbar Header -->
     <header class="glass-nav sticky top-0 z-40 border-b border-stone-200 shadow-sm transition-all duration-300">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <a href="/" class="flex items-center gap-2 group">
-                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
-                    <i class="fa-solid fa-utensils text-lg"></i>
-                </div>
+            <a href="/" class="flex items-center gap-3 group">
+                <?php if ($storeLogo): ?>
+                    <img src="<?= $storeLogo ?>" alt="Logo Toko" class="w-10 h-10 rounded-xl object-contain shadow-sm group-hover:scale-105 transition-transform">
+                <?php else: ?>
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-amber-500 flex items-center justify-center text-white shadow-md shadow-brand-500/20 group-hover:scale-105 transition-transform">
+                        <i class="fa-solid fa-utensils text-lg"></i>
+                    </div>
+                <?php endif; ?>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-stone-900 group-hover:text-brand-600 transition-colors leading-tight">
                         <?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>
                     </h1>
-                    <p class="text-xs text-stone-500 hidden sm:block">Kuliner Tradisional & Ikan Bakar</p>
+                    <p class="text-xs text-stone-500 hidden sm:block"><?= htmlspecialchars($settings['store_tagline'] ?? 'Kuliner Tradisional & Ikan Bakar') ?></p>
                 </div>
             </a>
 

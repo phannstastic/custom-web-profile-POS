@@ -65,6 +65,83 @@ class AdminController extends Controller
         ], 'layouts/admin');
     }
 
+    public function settings(): void
+    {
+        Auth::requireAuth();
+
+        $db = \App\Database\Connection::get();
+        $settingsRaw = $db->query("SELECT key, value FROM settings")->fetchAll();
+        $settings = [];
+        foreach ($settingsRaw as $row) {
+            $settings[$row['key']] = $row['value'];
+        }
+
+        $this->render('admin/settings', [
+            'title' => 'Identitas Usaha & Kustomisasi Tema - Admin',
+            'currentUser' => Auth::user(),
+            'settings' => $settings,
+            'adminActiveNav' => 'settings'
+        ], 'layouts/admin');
+    }
+
+    public function updateSettings(): void
+    {
+        Auth::requireAuth();
+
+        $db = \App\Database\Connection::get();
+
+        $keys = [
+            'store_name',
+            'store_tagline',
+            'store_phone',
+            'store_hours',
+            'store_address',
+            'receipt_footer',
+            'theme_primary_color'
+        ];
+
+        $stmt = $db->prepare("INSERT INTO settings (key, value) VALUES (:key, :value) ON CONFLICT(key) DO UPDATE SET value = :value, updated_at = CURRENT_TIMESTAMP");
+
+        foreach ($keys as $k) {
+            if (isset($_POST[$k])) {
+                $val = trim($_POST[$k]);
+                $stmt->execute([':key' => $k, ':value' => $val]);
+
+                // Sync store_phone juga ke store_whatsapp
+                if ($k === 'store_phone') {
+                    $stmt->execute([':key' => 'store_whatsapp', ':value' => $val]);
+                }
+            }
+        }
+
+        // Handle store_maps_embed / store_maps_url
+        if (isset($_POST['store_maps_embed'])) {
+            $mapsVal = trim($_POST['store_maps_embed']);
+            $stmt->execute([':key' => 'store_maps_embed', ':value' => $mapsVal]);
+            $stmt->execute([':key' => 'store_maps_url', ':value' => $mapsVal]);
+        }
+
+        // Handle Upload Logo Toko
+        if (!empty($_FILES['store_logo']['name'])) {
+            $logoName = Uploader::uploadAsset($_FILES['store_logo'], 'logo_');
+            if ($logoName) {
+                $stmt->execute([':key' => 'store_logo', ':value' => $logoName]);
+            }
+        }
+
+        // Handle Upload Banner Toko
+        if (!empty($_FILES['store_banner']['name'])) {
+            $bannerName = Uploader::uploadAsset($_FILES['store_banner'], 'banner_');
+            if ($bannerName) {
+                $stmt->execute([':key' => 'store_banner', ':value' => $bannerName]);
+            }
+        }
+
+        $_SESSION['flash_success'] = 'Pengaturan identitas toko & tema warna berhasil disimpan!';
+        header('Location: /admin/settings');
+        exit;
+    }
+
     public function categories(): void
     {
         Auth::requireAuth();

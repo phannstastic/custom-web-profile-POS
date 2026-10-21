@@ -60,16 +60,21 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
                     
                     <div class="relative bg-white p-4 sm:p-5 rounded-2xl shadow-xl border border-stone-100 overflow-hidden">
                         <!-- Culinary Showcase Image / Styled Mockup -->
+                        <?php
+                            $bannerImg = !empty($settings['store_banner']) && file_exists(dirname(__DIR__, 2) . '/public/assets/uploads/' . $settings['store_banner'])
+                                ? '/assets/uploads/' . htmlspecialchars($settings['store_banner'])
+                                : 'https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80';
+                        ?>
                         <div class="relative h-64 sm:h-72 rounded-xl overflow-hidden bg-gradient-to-tr from-stone-900 to-stone-700 flex flex-col justify-end p-5 text-white">
-                            <div class="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-50" style="background-image: url('https://images.unsplash.com/photo-1544025162-d76694265947?auto=format&fit=crop&w=800&q=80');"></div>
+                            <div class="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-60" style="background-image: url('<?= $bannerImg ?>');"></div>
                             
                             <span class="absolute top-4 left-4 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-500 text-stone-950 text-xs font-bold shadow-md">
                                 <i class="fa-solid fa-star"></i> Menu Legendaris
                             </span>
 
                             <div class="relative z-10">
-                                <h3 class="text-xl font-bold">Ayam & Ikan Bakar Sedap</h3>
-                                <p class="text-xs text-stone-300 mt-1">Dibakar dengan arang batok kelapa & kecap madu khas warisan Jogja.</p>
+                                <h3 class="text-xl font-bold"><?= htmlspecialchars($settings['store_name'] ?? 'Kang Naryo') ?></h3>
+                                <p class="text-xs text-stone-300 mt-1"><?= htmlspecialchars($settings['store_tagline'] ?? 'Cita rasa khas nusantara.') ?></p>
                             </div>
                         </div>
 
@@ -230,7 +235,7 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
                 <div class="bg-white p-2.5 rounded-2xl border border-stone-200 shadow-sm overflow-hidden">
                     <div class="w-full h-80 sm:h-96 rounded-xl overflow-hidden bg-stone-200 relative">
                         <iframe 
-                            src="<?= htmlspecialchars($settings['store_maps_url'] ?? 'https://maps.google.com/maps?q=Yogyakarta&t=&z=14&ie=UTF8&iwloc=&output=embed') ?>" 
+                            src="<?= htmlspecialchars($settings['store_maps_embed'] ?? $settings['store_maps_url'] ?? 'https://maps.google.com/maps?q=Yogyakarta&t=&z=14&ie=UTF8&iwloc=&output=embed') ?>" 
                             width="100%" 
                             height="100%" 
                             style="border:0;" 

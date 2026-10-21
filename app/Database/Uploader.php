@@ -78,4 +78,36 @@ class Uploader
         move_uploaded_file($file['tmp_name'], $targetDir . $fallbackFilename);
         return $fallbackFilename;
     }
+
+    public static function uploadAsset(array $file, string $prefix = 'asset_'): ?string
+    {
+        if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {
+            return null;
+        }
+
+        $allowedTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/svg+xml'];
+        $finfo = finfo_open(FILEINFO_MIME_TYPE);
+        $mime = finfo_file($finfo, $file['tmp_name']);
+        finfo_close($finfo);
+
+        if (!in_array($mime, $allowedTypes)) {
+            return null;
+        }
+
+        $targetDir = dirname(__DIR__, 2) . '/public/assets/uploads/';
+        if (!is_dir($targetDir)) {
+            mkdir($targetDir, 0777, true);
+        }
+
+        $ext = pathinfo($file['name'], PATHINFO_EXTENSION);
+        if ($mime === 'image/svg+xml') {
+            $filename = $prefix . time() . '_' . bin2hex(random_bytes(4)) . '.svg';
+            move_uploaded_file($file['tmp_name'], $targetDir . $filename);
+            return $filename;
+        }
+
+        $filename = $prefix . time() . '_' . bin2hex(random_bytes(4)) . '.' . ($ext ?: 'png');
+        move_uploaded_file($file['tmp_name'], $targetDir . $filename);
+        return $filename;
+    }
 }
