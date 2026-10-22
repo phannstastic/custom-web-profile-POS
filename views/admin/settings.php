@@ -41,20 +41,54 @@
                         name="store_name" 
                         required 
                         value="<?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>"
-                        placeholder="Contoh: Warung Bu Siti / Pondok Makan Kang Naryo" 
+                        placeholder="Contoh: Ayam Geprek Bu Rini / Pondok Makan Kang Naryo" 
                         class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-semibold text-stone-900"
                     >
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Tagline / Slogan Pendek</label>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Tagline / Slogan Utama</label>
                     <input 
                         type="text" 
                         name="store_tagline" 
                         value="<?= htmlspecialchars($settings['store_tagline'] ?? '') ?>"
-                        placeholder="Contoh: Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap" 
+                        placeholder="Contoh: Geprek Asli Dari Jogja / Cita Rasa Masakan Khas Tradisional" 
                         class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-stone-900"
                     >
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Badge / Label Sambutan Depan</label>
+                    <input 
+                        type="text" 
+                        name="hero_badge" 
+                        value="<?= htmlspecialchars($settings['hero_badge'] ?? 'Tradisi Kuliner Sejak Puluhan Tahun') ?>"
+                        placeholder="Contoh: Tradisi Kuliner Sejak Puluhan Tahun / Resep Asli Khas Jogja" 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-stone-900"
+                    >
+                    <span class="text-[11px] text-stone-400 mt-1 block">Teks badge kecil dengan animasi di atas judul web profil.</span>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Awalan Judul Utama (Headline)</label>
+                    <input 
+                        type="text" 
+                        name="hero_title_prefix" 
+                        value="<?= htmlspecialchars($settings['hero_title_prefix'] ?? 'Nikmati Kelezatan Asli') ?>"
+                        placeholder="Contoh: Nikmati Kelezatan Asli / Selamat Datang di" 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all text-stone-900"
+                    >
+                    <span class="text-[11px] text-stone-400 mt-1 block">Diikuti oleh Nama Toko dengan warna gradasi mencolok.</span>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Narasi / Deskripsi Cerita Usaha & Cita Rasa</label>
+                    <textarea 
+                        name="store_description" 
+                        rows="3" 
+                        placeholder="Contoh: Diracik menggunakan rempah pilihan nusantara dengan sambal terasi uleg segar setiap hari. Dibuat dari ayam segar pilihan dengan bumbu meresap..." 
+                        class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all leading-relaxed text-stone-900"><?= htmlspecialchars($settings['store_description'] ?? '') ?></textarea>
+                    <span class="text-[11px] text-stone-400 mt-1 block">Teks panjang yang mendeskripsikan keistimewaan rasa, racikan sambal, dan filosofi masakan Anda di halaman depan.</span>
                 </div>
             </div>
 

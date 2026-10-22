@@ -236,15 +236,31 @@
                         class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all"></textarea>
                 </div>
 
-                <div>
-                    <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Upload Foto Menu (Auto-compress WebP)</label>
-                    <input 
-                        type="file" 
-                        name="image" 
-                        accept="image/jpeg,image/png,image/webp" 
-                        class="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
-                    >
-                    <span class="text-[11px] text-stone-400 mt-1 block">Foto otomatis di-resize & dikompres agar hemat storage & cepat dibuka di HP pelanggan.</span>
+                <div class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1.5">Foto Utama Menu (Cover)</label>
+                        <input 
+                            type="file" 
+                            name="image" 
+                            accept="image/jpeg,image/png,image/webp" 
+                            class="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-brand-50 file:text-brand-700 hover:file:bg-brand-100"
+                        >
+                        <span class="text-[11px] text-stone-400 mt-1 block">Foto sampul yang muncul di daftar menu kartu depan & kasir POS.</span>
+                    </div>
+
+                    <div class="p-3.5 bg-stone-50 rounded-xl border border-stone-200">
+                        <label class="block text-xs font-bold text-stone-800 uppercase tracking-wider mb-1">
+                            <i class="fa-solid fa-images text-brand-600 mr-1"></i> Upload Banyak Foto Sekaligus (Galeri Slide)
+                        </label>
+                        <input 
+                            type="file" 
+                            name="gallery_images[]" 
+                            multiple 
+                            accept="image/jpeg,image/png,image/webp" 
+                            class="w-full text-xs text-stone-500 file:mr-3 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-white file:text-stone-700 hover:file:bg-stone-100 file:border file:border-stone-300"
+                        >
+                        <span class="text-[11px] text-stone-500 mt-1 block">Bisa pilih <strong>lebih dari 1 foto sekaligus</strong> (tahan tombol Ctrl / Shift di komputer saat memilih file foto) agar menu memiliki fitur slide foto di pop-up buku menu.</span>
+                    </div>
                 </div>
 
                 <!-- Toggle Options -->

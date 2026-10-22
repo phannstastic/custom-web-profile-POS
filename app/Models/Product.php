@@ -41,19 +41,20 @@ class Product extends Model
         }
 
         $stmt = static::getDb()->prepare("
-            INSERT INTO products (category_id, name, slug, description, price, image, is_available, is_featured)
-            VALUES (:category_id, :name, :slug, :description, :price, :image, :is_available, :is_featured)
+            INSERT INTO products (category_id, name, slug, description, price, image, gallery_images, is_available, is_featured)
+            VALUES (:category_id, :name, :slug, :description, :price, :image, :gallery_images, :is_available, :is_featured)
         ");
 
         return $stmt->execute([
-            ':category_id'  => !empty($data['category_id']) ? (int) $data['category_id'] : null,
-            ':name'         => $name,
-            ':slug'         => $slug,
-            ':description'  => $data['description'] ?? null,
-            ':price'        => (int) ($data['price'] ?? 0),
-            ':image'        => $data['image'] ?? null,
-            ':is_available' => isset($data['is_available']) ? (int) $data['is_available'] : 1,
-            ':is_featured'  => isset($data['is_featured']) ? (int) $data['is_featured'] : 0,
+            ':category_id'     => !empty($data['category_id']) ? (int) $data['category_id'] : null,
+            ':name'            => $name,
+            ':slug'            => $slug,
+            ':description'     => $data['description'] ?? null,
+            ':price'           => (int) ($data['price'] ?? 0),
+            ':image'           => $data['image'] ?? null,
+            ':gallery_images'  => $data['gallery_images'] ?? null,
+            ':is_available'    => isset($data['is_available']) ? (int) $data['is_available'] : 1,
+            ':is_featured'     => isset($data['is_featured']) ? (int) $data['is_featured'] : 0,
         ]);
     }
 
@@ -88,6 +89,11 @@ class Product extends Model
         if (!empty($data['image'])) {
             $sql .= ", image = :image ";
             $params[':image'] = $data['image'];
+        }
+
+        if (isset($data['gallery_images'])) {
+            $sql .= ", gallery_images = :gallery_images ";
+            $params[':gallery_images'] = $data['gallery_images'];
         }
 
         $sql .= " WHERE id = :id";

@@ -79,6 +79,41 @@ class Uploader
         return $fallbackFilename;
     }
 
+    /**
+     * Upload banyak foto produk sekaligus (gallery_images)
+     * @param array $filesArray Dari $_FILES['images'] yang berisi array 'name', 'type', 'tmp_name', 'error', 'size'
+     * @return array List nama file gambar yang berhasil disimpan
+     */
+    public static function uploadMultipleProductImages(array $filesArray): array
+    {
+        $uploaded = [];
+        if (!isset($filesArray['name']) || !is_array($filesArray['name'])) {
+            return $uploaded;
+        }
+
+        $total = count($filesArray['name']);
+        for ($i = 0; $i < $total; $i++) {
+            if ($filesArray['error'][$i] !== UPLOAD_ERR_OK) {
+                continue;
+            }
+
+            $singleFile = [
+                'name'     => $filesArray['name'][$i],
+                'type'     => $filesArray['type'][$i],
+                'tmp_name' => $filesArray['tmp_name'][$i],
+                'error'    => $filesArray['error'][$i],
+                'size'     => $filesArray['size'][$i],
+            ];
+
+            $savedFilename = self::uploadProductImage($singleFile);
+            if ($savedFilename) {
+                $uploaded[] = $savedFilename;
+            }
+        }
+
+        return $uploaded;
+    }
+
     public static function uploadAsset(array $file, string $prefix = 'asset_'): ?string
     {
         if (!isset($file['error']) || $file['error'] !== UPLOAD_ERR_OK) {

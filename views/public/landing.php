@@ -12,15 +12,19 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
             <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
                 <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-100 text-brand-800 text-xs font-bold tracking-wide uppercase shadow-sm">
                     <span class="w-2 h-2 rounded-full bg-brand-600 animate-ping"></span>
-                    <span>Tradisi Kuliner Sejak Puluhan Tahun</span>
+                    <span><?= htmlspecialchars($settings['hero_badge'] ?? 'Tradisi Kuliner Sejak Puluhan Tahun') ?></span>
                 </div>
 
                 <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-stone-900 tracking-tight leading-[1.15]">
-                    Nikmati Kelezatan Asli <span class="text-gradient"><?= htmlspecialchars($settings['store_name'] ?? 'Kang Naryo') ?></span>
+                    <?= htmlspecialchars($settings['hero_title_prefix'] ?? 'Nikmati Kelezatan Asli') ?> <span class="text-gradient"><?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan') ?></span>
                 </h1>
 
                 <p class="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-                    <?= htmlspecialchars($settings['store_tagline'] ?? 'Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap') ?>. Diracik menggunakan rempah pilihan nusantara dengan sambal terasi uleg segar setiap hari.
+                    <?php if (!empty($settings['store_description'])): ?>
+                        <?= nl2br(htmlspecialchars($settings['store_description'])) ?>
+                    <?php else: ?>
+                        <?= htmlspecialchars($settings['store_tagline'] ?? 'Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap') ?>. Diracik menggunakan rempah pilihan nusantara dengan sambal terasi uleg segar setiap hari.
+                    <?php endif; ?>
                 </p>
 
                 <!-- Action Buttons -->

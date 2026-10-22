@@ -100,6 +100,9 @@ class AdminController extends Controller
         $keys = [
             'store_name',
             'store_tagline',
+            'hero_badge',
+            'hero_title_prefix',
+            'store_description',
             'store_phone',
             'store_hours',
             'store_address',
@@ -260,15 +263,35 @@ class AdminController extends Controller
             $imageFilename = Uploader::uploadProductImage($_FILES['image']);
         }
 
+        // Upload Banyak Foto (Galeri Foto)
+        $galleryImages = [];
+        if ($imageFilename) {
+            $galleryImages[] = $imageFilename;
+        }
+        if (!empty($_FILES['gallery_images']['name']) && is_array($_FILES['gallery_images']['name'])) {
+            $moreImages = Uploader::uploadMultipleProductImages($_FILES['gallery_images']);
+            foreach ($moreImages as $img) {
+                if (!in_array($img, $galleryImages)) {
+                    $galleryImages[] = $img;
+                }
+            }
+        }
+
+        // Jika user tidak upload foto utama tersendiri tetapi upload multi-foto
+        if (!$imageFilename && !empty($galleryImages)) {
+            $imageFilename = $galleryImages[0];
+        }
+
         $productModel = new Product();
         $productModel->create([
-            'name'         => $name,
-            'category_id'  => $categoryId,
-            'price'        => $price,
-            'description'  => $description,
-            'image'        => $imageFilename,
-            'is_available' => $isAvailable,
-            'is_featured'  => $isFeatured,
+            'name'           => $name,
+            'category_id'    => $categoryId,
+            'price'          => $price,
+            'description'    => $description,
+            'image'          => $imageFilename,
+            'gallery_images' => !empty($galleryImages) ? json_encode($galleryImages) : null,
+            'is_available'   => $isAvailable,
+            'is_featured'    => $isFeatured,
         ]);
 
         $_SESSION['flash_success'] = "Menu '{$name}' berhasil ditambahkan!";
@@ -289,6 +312,9 @@ class AdminController extends Controller
         $isFeatured = isset($_POST['is_featured']) ? 1 : 0;
 
         if ($id > 0 && !empty($name)) {
+            $productModel = new Product();
+            $existingProduct = $productModel->findById($id);
+
             $data = [
                 'name'         => $name,
                 'category_id'  => $categoryId,
@@ -298,14 +324,50 @@ class AdminController extends Controller
                 'is_featured'  => $isFeatured,
             ];
 
+            // Ambil galeri yang sudah ada
+            $existingGallery = [];
+            if ($existingProduct && !empty($existingProduct['gallery_images'])) {
+                try {
+                    $parsed = json_decode($existingProduct['gallery_images'], true);
+                    if (is_array($parsed)) {
+                        $existingGallery = $parsed;
+                    }
+                } catch (\Exception $e) {}
+            }
+            if (empty($existingGallery) && !empty($existingProduct['image'])) {
+                $existingGallery[] = $existingProduct['image'];
+            }
+
+            // Jika ada upload foto utama baru
             if (!empty($_FILES['image']['name'])) {
                 $imageFilename = Uploader::uploadProductImage($_FILES['image']);
                 if ($imageFilename) {
                     $data['image'] = $imageFilename;
+                    if (!in_array($imageFilename, $existingGallery)) {
+                        array_unshift($existingGallery, $imageFilename);
+                    }
                 }
             }
 
-            $productModel = new Product();
+            // Jika ada upload tambahan foto galeri (multi-file)
+            if (!empty($_FILES['gallery_images']['name']) && is_array($_FILES['gallery_images']['name'])) {
+                $newGalleryImages = Uploader::uploadMultipleProductImages($_FILES['gallery_images']);
+                foreach ($newGalleryImages as $img) {
+                    if (!in_array($img, $existingGallery)) {
+                        $existingGallery[] = $img;
+                    }
+                }
+            }
+
+            // Jika foto utama belum ada tapi ada foto galeri
+            if (empty($data['image']) && empty($existingProduct['image']) && !empty($existingGallery)) {
+                $data['image'] = $existingGallery[0];
+            }
+
+            if (!empty($existingGallery)) {
+                $data['gallery_images'] = json_encode(array_values($existingGallery));
+            }
+
             $productModel->updateProduct($id, $data);
             $_SESSION['flash_success'] = "Menu '{$name}' berhasil diperbarui!";
         }
