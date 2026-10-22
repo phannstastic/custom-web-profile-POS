@@ -363,7 +363,7 @@
 
             <!-- Modal Footer -->
             <div class="p-4 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-3">
-                <span class="text-[11px] text-stone-400 font-medium">Buku Menu Digital • Pondok Makan Kang Naryo</span>
+                <span class="text-[11px] text-stone-400 font-medium">Buku Menu Digital • <?= htmlspecialchars($shop['name'] ?? 'Resto') ?></span>
                 <button 
                     type="button" 
                     @click="closeModal()" 
