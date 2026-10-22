@@ -4,11 +4,6 @@
     <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <div class="flex items-center gap-2 text-xs text-stone-500 font-semibold uppercase tracking-wider mb-1">
-                <span>Manajemen Transaksi</span>
-                <span>&bull;</span>
-                <span class="text-brand-600">Issue #7 Selesai</span>
-            </div>
             <h1 class="text-2xl font-extrabold text-stone-900 tracking-tight">Laporan Rekapitulasi & Penjualan</h1>
             <p class="text-xs sm:text-sm text-stone-500 mt-0.5">
                 Pantau perolehan omset harian, proporsi pembayaran tunai vs QRIS, serta riwayat transaksi pesanan.
