@@ -150,13 +150,15 @@
                         </div>
                     </div>
 
-                    <!-- Slide Hint Overlay -->
-                    <div class="absolute bottom-3 right-3 z-10">
-                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold">
-                            <i class="fa-solid fa-images text-[10px]"></i>
-                            <span>Galeri Foto</span>
-                        </span>
-                    </div>
+                    <!-- Slide Hint Overlay (Hanya muncul jika foto lebih dari 1) -->
+                    <template x-if="item.gallery_images && (function(){ try { const g = typeof item.gallery_images === 'string' ? JSON.parse(item.gallery_images) : item.gallery_images; return Array.isArray(g) && g.length > 1; } catch(e){ return false; } })()">
+                        <div class="absolute bottom-3 right-3 z-10">
+                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-semibold">
+                                <i class="fa-solid fa-images text-[10px]"></i>
+                                <span>Galeri Foto</span>
+                            </span>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Card Content -->
@@ -256,8 +258,16 @@
                     </div>
                 </template>
 
-                <!-- Gradient Shadow on Slider -->
-                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
+                <!-- Fallback jika produk belum ada foto sama sekali -->
+                <template x-if="activeSlides.length === 0">
+                    <div class="w-full h-full flex flex-col items-center justify-center text-stone-500 bg-stone-900">
+                        <i class="fa-solid fa-bowl-food text-5xl mb-2 text-stone-600"></i>
+                        <span class="text-xs font-semibold text-stone-400">Belum ada foto menu</span>
+                    </div>
+                </template>
+
+                <!-- Gradient Shadow on Slider (hanya jika ada gambar) -->
+                <div x-show="activeSlides.length > 0" class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none"></div>
 
                 <!-- Slide Navigation Arrows (muncul jika gambar > 1) -->
                 <template x-if="activeSlides.length > 1">
