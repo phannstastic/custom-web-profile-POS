@@ -2,6 +2,8 @@
 
 Dokumen ini disusun sebagai panduan menyeluruh (*Blueprint*) untuk mengimplementasikan **Quality Assurance (QA) Lifecycle**, **Test Management (Jira + Zephyr)**, **Automated UI/E2E Testing (Selenium)**, dan **Continuous Integration / Continuous Deployment (CI/CD)** pada proyek **Custom Web Profile & POS**.
 
+> **Jira Integration**: Proyek ini terhubung langsung ke Jira Project `KAN` (`rphannfvs.atlassian.net`).
+
 ---
 
 ## 1. Arsitektur & Alur Kerja (QA Workflow)
