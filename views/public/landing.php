@@ -1,6 +1,6 @@
 <?php
 $waNumber = preg_replace('/[^0-9]/', '', $settings['store_whatsapp'] ?? '6281234567890');
-$waMessage = urlencode("Halo " . ($settings['store_name'] ?? 'Pondok Makan Kang Naryo') . ", saya ingin bertanya seputar menu & reservasi tempat.");
+$waMessage = urlencode("Halo " . ($settings['store_name'] ?? 'Restoran') . ", saya ingin bertanya seputar menu & reservasi tempat.");
 $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
 ?>
 <!-- Hero Section -->
@@ -151,7 +151,7 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
                         <?= htmlspecialchars($item['name']) ?>
                     </h3>
                     <p class="text-xs sm:text-sm text-stone-500 mt-2 line-clamp-2 leading-relaxed">
-                        <?= htmlspecialchars($item['description'] ?? 'Pilihan lezat dengan resep warisan khas Kang Naryo.') ?>
+                        <?= htmlspecialchars($item['description'] ?? 'Pilihan lezat dengan resep rempah pilihan nusantara.') ?>
                     </p>
                 </div>
 
@@ -199,7 +199,7 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
                     <div>
                         <h3 class="font-bold text-stone-900 text-sm">Alamat Lengkap</h3>
                         <p class="text-xs sm:text-sm text-stone-600 mt-1 leading-relaxed">
-                            <?= htmlspecialchars($settings['store_address'] ?? 'Jl. Kuliner Lezat No. 88, Yogyakarta') ?>
+                            <?= htmlspecialchars($settings['store_address'] ?? 'Yogyakarta') ?>
                         </p>
                     </div>
                 </div>
@@ -250,7 +250,7 @@ $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
                         </iframe>
                     </div>
                     <div class="p-3 text-center">
-                        <a href="https://maps.google.com/?q=<?= urlencode(($settings['store_name'] ?? 'Kang Naryo') . ' ' . ($settings['store_address'] ?? 'Yogyakarta')) ?>" 
+                        <a href="https://maps.google.com/?q=<?= urlencode(($settings['store_name'] ?? 'Resto') . ' ' . ($settings['store_address'] ?? 'Yogyakarta')) ?>" 
                            target="_blank" 
                            class="inline-flex items-center gap-1.5 text-xs font-bold text-brand-600 hover:underline">
                             <i class="fa-solid fa-diamond-turn-right"></i> Buka Rute di Google Maps Aplikasi

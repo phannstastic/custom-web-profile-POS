@@ -11,7 +11,7 @@ class ApiController extends Controller
     {
         $this->json([
             'status' => 'ok',
-            'app' => 'Pondok Makan Kang Naryo Core Architecture',
+            'app' => 'Custom Web Profile & POS Architecture',
             'database' => 'SQLite Connected',
             'php_version' => PHP_VERSION,
             'timestamp' => date('Y-m-d H:i:s')

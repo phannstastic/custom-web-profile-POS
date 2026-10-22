@@ -58,7 +58,7 @@
                         <i class="fa-solid fa-utensils text-sm"></i>
                     </div>
                     <div>
-                        <span class="block text-sm font-bold text-white tracking-tight leading-tight">Admin Kang Naryo</span>
+                        <span class="block text-sm font-bold text-white tracking-tight leading-tight"><?= htmlspecialchars($settings['store_name'] ?? 'Admin Panel') ?></span>
                         <span class="text-[10px] text-stone-400 font-medium">Backoffice Management</span>
                     </div>
                 </a>
@@ -171,8 +171,8 @@
         </main>
 
         <footer class="p-4 sm:px-8 border-t border-stone-200 text-stone-400 text-xs flex items-center justify-between bg-white">
-            <span>Pondok Makan Kang Naryo • Backoffice Admin</span>
-            <span>Versi SQLite 1.0</span>
+            <span><?= htmlspecialchars($settings['store_name'] ?? 'Resto') ?> • Backoffice Admin</span>
+            <span>Versi Custom POS 1.0</span>
         </footer>
     </div>
 

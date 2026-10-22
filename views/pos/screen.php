@@ -25,7 +25,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="POS Kang Naryo">
+    <meta name="apple-mobile-web-app-title" content="<?= htmlspecialchars($settings['store_name'] ?? 'POS') ?>">
 
     <!-- Dexie.js (IndexedDB wrapper for low-device offline & instant caching) -->
     <script src="https://cdn.jsdelivr.net/npm/dexie@3.2.4/dist/dexie.min.js"></script>
@@ -93,7 +93,7 @@
                 <?php endif; ?>
                 <div>
                     <span class="block text-sm font-bold tracking-tight text-white leading-tight">
-                        <?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>
+                        <?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?>
                     </span>
                     <span class="text-[10px] text-amber-400 font-semibold flex items-center gap-1">
                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Mode Kasir POS

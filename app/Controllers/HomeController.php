@@ -26,7 +26,7 @@ class HomeController extends Controller
         $products = $productModel->getAllWithCategory();
 
         $this->render('public/landing', [
-            'title' => ($settings['store_name'] ?? 'Pondok Makan Kang Naryo') . ' - Masakan Khas Tradisional & Ikan Bakar',
+            'title' => ($settings['store_name'] ?? 'Restoran') . (!empty($settings['store_tagline']) ? ' - ' . $settings['store_tagline'] : ''),
             'settings' => $settings,
             'products' => $products,
             'activeNav' => 'home'
@@ -43,7 +43,7 @@ class HomeController extends Controller
         $categories = $categoryModel->allOrdered();
 
         $this->render('public/digital-menu', [
-            'title' => 'Buku Menu Digital - ' . ($settings['store_name'] ?? 'Pondok Makan Kang Naryo'),
+            'title' => 'Menu - ' . ($settings['store_name'] ?? 'Restoran'),
             'settings' => $settings,
             'products' => $products,
             'categories' => $categories,

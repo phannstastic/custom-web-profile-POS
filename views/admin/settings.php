@@ -40,8 +40,8 @@
                         type="text" 
                         name="store_name" 
                         required 
-                        value="<?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>"
-                        placeholder="Contoh: Ayam Geprek Bu Rini / Pondok Makan Kang Naryo" 
+                        value="<?= htmlspecialchars($settings['store_name'] ?? 'Resto Custom') ?>"
+                        placeholder="Contoh: Ayam Geprek Bu Rini / Warung Masakan Enak" 
                         class="w-full px-4 py-2.5 bg-stone-50 border border-stone-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition-all font-semibold text-stone-900"
                     >
                 </div>

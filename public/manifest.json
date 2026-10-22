@@ -1,7 +1,7 @@
 {
-  "name": "POS Kang Naryo",
-  "short_name": "Kang Naryo POS",
-  "description": "Aplikasi Kasir POS & Buku Menu Digital Pondok Makan Kang Naryo",
+  "name": "POS Kasir & Menu Digital",
+  "short_name": "Smart POS",
+  "description": "Aplikasi Kasir POS & Web Profil Menu Restoran Custom",
   "start_url": "/pos",
   "scope": "/",
   "display": "standalone",

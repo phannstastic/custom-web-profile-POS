@@ -328,7 +328,7 @@
         <!-- Table Footer Pagination / Info -->
         <div class="p-4 bg-stone-50/60 border-t border-stone-100 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-stone-500 font-medium">
             <span>Rentang Data: <?= date('d M Y', strtotime($filters['start_date'])) ?> s/d <?= date('d M Y', strtotime($filters['end_date'])) ?></span>
-            <span class="text-stone-400">Pondok Makan Kang Naryo POS System</span>
+            <span class="text-stone-400"><?= htmlspecialchars($settings['store_name'] ?? 'Resto') ?> POS System</span>
         </div>
     </div>
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Pondok Makan Kang Naryo') ?></title>
+    <title><?= htmlspecialchars($title ?? ($settings['store_name'] ?? 'Restoran')) ?></title>
     <style>
         :root {
             --primary: #c2410c;
@@ -130,7 +130,7 @@
 </head>
 <body>
     <header>
-        <h1><?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?></h1>
+        <h1><?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?></h1>
         <p><?= htmlspecialchars($settings['store_tagline'] ?? 'Cita Rasa Tradisional Nusantara') ?></p>
         <span class="status-badge">⚡ Core Architecture Ready (Issue #1 Done)</span>
     </header>

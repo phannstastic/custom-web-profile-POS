@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Admin - Pondok Makan Kang Naryo</title>
+    <title>Login Backoffice Admin - Panel Kelola</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -36,7 +36,7 @@
                 <i class="fa-solid fa-lock"></i>
             </div>
             <h1 class="text-2xl font-bold tracking-tight text-white">Login Backoffice Admin</h1>
-            <p class="text-xs text-stone-400 mt-1">Pondok Makan Kang Naryo</p>
+            <p class="text-xs text-stone-400 mt-1"><?= htmlspecialchars($settings['store_name'] ?? 'Resto & POS System') ?></p>
         </div>
 
         <?php if (!empty($error)): ?>

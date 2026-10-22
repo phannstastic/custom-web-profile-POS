@@ -121,7 +121,7 @@
                     <template x-if="!item.image">
                         <div class="w-full h-full flex flex-col items-center justify-center text-stone-300 bg-stone-50">
                             <i class="fa-solid fa-utensils text-4xl mb-2"></i>
-                            <span class="text-xs font-semibold text-stone-400">Pondok Makan Kang Naryo</span>
+                            <span class="text-xs font-semibold text-stone-400"><?= htmlspecialchars($shop['name'] ?? 'Resto') ?></span>
                         </div>
                     </template>
 
@@ -172,7 +172,7 @@
                         </h2>
 
                         <!-- Item Description -->
-                        <p class="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed line-clamp-2" x-text="item.description || 'Pilihan lezat dengan bumbu rempah pilihan khas Kang Naryo.'">
+                        <p class="text-xs sm:text-sm text-stone-500 mt-2 leading-relaxed line-clamp-2" x-text="item.description || 'Pilihan lezat dengan bumbu rempah nusantara pilihan.'">
                         </p>
                     </div>
 

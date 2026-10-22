@@ -32,7 +32,7 @@ class PosController extends Controller
         $categories = $categoryModel->allOrdered();
 
         $this->render('pos/screen', [
-            'title' => 'Layar Kasir POS - ' . ($settings['store_name'] ?? 'Pondok Makan Kang Naryo'),
+            'title' => 'Layar Kasir POS - ' . ($settings['store_name'] ?? 'Restoran'),
             'settings' => $settings,
             'products' => $products,
             'categories' => $categories,

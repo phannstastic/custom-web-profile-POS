@@ -61,8 +61,9 @@ class AdminController extends Controller
         $todaySummary = $orderModel->getSalesSummary(date('Y-m-d'), date('Y-m-d'));
         $recentOrders = array_slice($orderModel->getFilteredOrders(null, null, null, null, null), 0, 5);
 
+        $settings = $this->getSettings();
         $this->render('admin/dashboard', [
-            'title' => 'Dashboard Admin - Pondok Makan Kang Naryo',
+            'title' => 'Dashboard Admin - ' . ($settings['store_name'] ?? 'Resto'),
             'currentUser' => Auth::user(),
             'products' => $products,
             'categories' => $categories,
@@ -162,8 +163,9 @@ class AdminController extends Controller
         $categoryModel = new Category();
         $categories = $categoryModel->allOrdered();
 
+        $settings = $this->getSettings();
         $this->render('admin/categories', [
-            'title' => 'Kelola Kategori - Pondok Makan Kang Naryo',
+            'title' => 'Kelola Kategori - ' . ($settings['store_name'] ?? 'Resto'),
             'currentUser' => Auth::user(),
             'categories' => $categories,
             'adminActiveNav' => 'categories'
@@ -232,8 +234,9 @@ class AdminController extends Controller
         $products = $productModel->getAllWithCategory();
         $categories = $categoryModel->allOrdered();
 
+        $settings = $this->getSettings();
         $this->render('admin/products', [
-            'title' => 'Kelola Menu Produk - Pondok Makan Kang Naryo',
+            'title' => 'Kelola Menu Produk - ' . ($settings['store_name'] ?? 'Resto'),
             'currentUser' => Auth::user(),
             'products' => $products,
             'categories' => $categories,

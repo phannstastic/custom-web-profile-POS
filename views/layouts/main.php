@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= htmlspecialchars($title ?? 'Pondok Makan Kang Naryo') ?></title>
+    <title><?= htmlspecialchars($title ?? ($settings['store_name'] ?? 'Restoran')) ?></title>
     <?php
         $primaryColor = !empty($settings['theme_primary_color']) ? htmlspecialchars($settings['theme_primary_color']) : '#ea580c';
         $storeLogo = !empty($settings['store_logo']) && file_exists(dirname(__DIR__, 2) . '/public/assets/uploads/' . $settings['store_logo']) 
@@ -24,7 +24,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="POS Kang Naryo">
+    <meta name="apple-mobile-web-app-title" content="<?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?>">
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -93,9 +93,9 @@
                 <?php endif; ?>
                 <div>
                     <h1 class="text-lg font-bold tracking-tight text-stone-900 group-hover:text-brand-600 transition-colors leading-tight">
-                        <?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>
+                        <?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?>
                     </h1>
-                    <p class="text-xs text-stone-500 hidden sm:block"><?= htmlspecialchars($settings['store_tagline'] ?? 'Kuliner Tradisional & Ikan Bakar') ?></p>
+                    <p class="text-xs text-stone-500 hidden sm:block"><?= htmlspecialchars($settings['store_tagline'] ?? 'Kuliner Nusantara') ?></p>
                 </div>
             </a>
 
@@ -104,27 +104,16 @@
                 <a href="/" class="px-3 py-2 rounded-lg text-sm font-semibold <?= ($activeNav ?? '') === 'home' ? 'text-brand-600 bg-brand-50' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100' ?> transition-colors">
                     Beranda
                 </a>
-                <a href="/menu" class="px-3 py-2 rounded-lg text-sm font-semibold <?= ($activeNav ?? '') === 'menu' ? 'text-brand-600 bg-brand-50' : 'text-stone-600 hover:text-stone-900 hover:bg-stone-100' ?> transition-colors">
-                    Buku Menu Digital
-                </a>
                 <a href="/#lokasi" class="px-3 py-2 rounded-lg text-sm font-semibold text-stone-600 hover:text-stone-900 hover:bg-stone-100 transition-colors">
                     Lokasi & Jam Buka
-                </a>
-                <a href="/pos" class="ml-2 px-3.5 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider text-amber-900 bg-amber-100 hover:bg-amber-200 transition-colors flex items-center gap-1.5">
-                    <i class="fa-solid fa-cash-register"></i> Kasir POS
                 </a>
             </nav>
 
             <!-- Action CTA -->
             <div class="flex items-center gap-2">
-                <a href="/menu" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-amber-600 text-white rounded-xl text-sm font-semibold shadow-md shadow-brand-600/20 hover:from-brand-700 hover:to-amber-700 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
-                    <i class="fa-solid fa-book-open"></i>
-                    <span>Lihat Menu</span>
-                </a>
-
-                <!-- Mobile Navigation Trigger (handled simply with icons) -->
-                <a href="/menu" class="sm:hidden p-2 rounded-lg text-brand-600 bg-brand-50 hover:bg-brand-100 transition-colors" title="Buka Menu">
-                    <i class="fa-solid fa-book-open text-lg"></i>
+                <a href="/#lokasi" class="hidden sm:inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-brand-600 to-amber-600 text-white rounded-xl text-sm font-semibold shadow-md shadow-brand-600/20 hover:from-brand-700 hover:to-amber-700 transition-all hover:shadow-lg hover:-translate-y-0.5 active:translate-y-0">
+                    <i class="fa-solid fa-map-location-dot"></i>
+                    <span>Lokasi Kami</span>
                 </a>
             </div>
         </div>
@@ -138,7 +127,7 @@
     <!-- WhatsApp Floating Action Button -->
     <?php
         $waNumber = preg_replace('/[^0-9]/', '', $settings['store_whatsapp'] ?? '6281234567890');
-        $waMessage = urlencode("Halo " . ($settings['store_name'] ?? 'Pondok Makan Kang Naryo') . ", saya ingin bertanya seputar menu & reservasi tempat.");
+        $waMessage = urlencode("Halo " . ($settings['store_name'] ?? 'Restoran') . ", saya ingin bertanya seputar menu & reservasi tempat.");
         $waUrl = "https://wa.me/{$waNumber}?text={$waMessage}";
     ?>
     <aside aria-label="Bantuan WhatsApp" class="fixed bottom-6 right-6 z-50">
@@ -159,10 +148,10 @@
                         <div class="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center text-white text-sm">
                             <i class="fa-solid fa-utensils"></i>
                         </div>
-                        <h2 class="text-white font-bold text-lg tracking-tight"><?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?></h2>
+                        <h2 class="text-white font-bold text-lg tracking-tight"><?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?></h2>
                     </div>
                     <p class="text-sm text-stone-400 leading-relaxed">
-                        <?= htmlspecialchars($settings['store_tagline'] ?? 'Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap') ?>
+                        <?= htmlspecialchars($settings['store_tagline'] ?? 'Cita Rasa Masakan Khas Tradisional') ?>
                     </p>
                     <p class="text-xs text-brand-400 font-medium">
                         <i class="fa-solid fa-heart mr-1 text-red-500"></i> Melayani dengan ketulusan cita rasa warisan nusantara.
@@ -195,21 +184,15 @@
                         <a href="/" class="hover:text-brand-400 transition-colors flex items-center gap-2">
                             <i class="fa-solid fa-angle-right text-xs"></i> Beranda Utama
                         </a>
-                        <a href="/menu" class="hover:text-brand-400 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-angle-right text-xs"></i> Katalog Menu Digital
-                        </a>
-                        <a href="/pos" class="hover:text-brand-400 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-angle-right text-xs"></i> Sistem Kasir POS
-                        </a>
-                        <a href="/admin" class="hover:text-brand-400 transition-colors flex items-center gap-2">
-                            <i class="fa-solid fa-angle-right text-xs"></i> Dashboard Admin
+                        <a href="/#lokasi" class="hover:text-brand-400 transition-colors flex items-center gap-2">
+                            <i class="fa-solid fa-angle-right text-xs"></i> Lokasi & Jam Buka
                         </a>
                     </div>
                 </div>
             </div>
 
             <div class="border-t border-stone-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-stone-500 gap-4">
-                <p>&copy; <?= date('Y') ?> <?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?>. All rights reserved.</p>
+                <p>&copy; <?= date('Y') ?> <?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?>. All rights reserved.</p>
                 <p><?= htmlspecialchars($settings['receipt_footer'] ?? '') ?></p>
             </div>
         </div>

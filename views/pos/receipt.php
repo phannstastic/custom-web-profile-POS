@@ -141,7 +141,7 @@
         
         <!-- Header -->
         <div class="text-center">
-            <div class="store-title uppercase"><?= htmlspecialchars($settings['store_name'] ?? 'Pondok Makan Kang Naryo') ?></div>
+            <div class="store-title uppercase"><?= htmlspecialchars($settings['store_name'] ?? 'Restoran') ?></div>
             <div><?= htmlspecialchars($settings['store_address'] ?? 'Jl. Kuliner No. 88, Yogyakarta') ?></div>
             <div>Telp: <?= htmlspecialchars($settings['store_phone'] ?? '081234567890') ?></div>
         </div>
