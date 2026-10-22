@@ -8,17 +8,6 @@ use App\Models\Category;
 
 class HomeController extends Controller
 {
-    private function getSettings(): array
-    {
-        $db = Connection::get();
-        $settingsRaw = $db->query("SELECT key, value FROM settings")->fetchAll();
-        $settings = [];
-        foreach ($settingsRaw as $row) {
-            $settings[$row['key']] = $row['value'];
-        }
-        return $settings;
-    }
-
     public function index(): void
     {
         $settings = $this->getSettings();

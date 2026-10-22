@@ -23,7 +23,11 @@ def test_adm_001_login_success(driver, base_url):
     # Masukkan username dan password benar
     login_page.login("admin", "admin123")
     
-    # Tunggu redirect ke dashboard admin
+    # Tunggu browser selesai redirect keluar dari /admin/login ke /admin
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    WebDriverWait(driver, 10).until(lambda d: d.current_url.rstrip('/').endswith('/admin'))
+    
     assert "/admin" in driver.current_url
     assert "Login" not in driver.title
     # Pastikan nama admin tampil di sidebar
