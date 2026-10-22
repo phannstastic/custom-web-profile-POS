@@ -37,4 +37,15 @@ abstract class Controller
         require $viewFile;
         exit;
     }
+
+    protected function getSettings(): array
+    {
+        $db = \App\Database\Connection::get();
+        $settingsRaw = $db->query("SELECT key, value FROM settings")->fetchAll();
+        $settings = [];
+        foreach ($settingsRaw as $row) {
+            $settings[$row['key']] = $row['value'];
+        }
+        return $settings;
+    }
 }
