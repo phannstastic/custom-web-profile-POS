@@ -4,13 +4,13 @@ from .base_page import BasePage
 class PublicMenuPage(BasePage):
     # Locators
     MENU_CARDS = (By.CSS_SELECTOR, ".grid .group.rounded-3xl")
-    MODAL_CONTAINER = (By.CSS_SELECTOR, "div[x-show='isModalOpen']")
-    MODAL_TITLE = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] h3")
-    MODAL_PRICE = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] span.font-mono-num")
-    SLIDE_IMAGES = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] .relative img")
-    NEXT_SLIDE_BTN = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] button[x-on\\:click*='nextSlide'], div[x-show='isModalOpen'] button[@click*='nextSlide']")
-    PREV_SLIDE_BTN = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] button[x-on\\:click*='prevSlide'], div[x-show='isModalOpen'] button[@click*='prevSlide']")
-    MODAL_CLOSE_BTN = (By.CSS_SELECTOR, "div[x-show='isModalOpen'] button[x-on\\:click*='closeModal'], div[x-show='isModalOpen'] button[@click*='closeModal']")
+    MODAL_CONTAINER = (By.XPATH, "//div[@x-show='isModalOpen']")
+    MODAL_TITLE = (By.XPATH, "//div[@x-show='isModalOpen']//h3")
+    MODAL_PRICE = (By.XPATH, "//div[@x-show='isModalOpen']//span[contains(@class, 'font-mono-num')]")
+    SLIDE_IMAGES = (By.XPATH, "//div[@x-show='isModalOpen']//div[contains(@class, 'relative')]//img")
+    NEXT_SLIDE_BTN = (By.XPATH, "//div[@x-show='isModalOpen']//button[contains(@class, 'rounded-full') and .//i[contains(@class, 'fa-chevron-right')]]")
+    PREV_SLIDE_BTN = (By.XPATH, "//div[@x-show='isModalOpen']//button[contains(@class, 'rounded-full') and .//i[contains(@class, 'fa-chevron-left')]]")
+    MODAL_CLOSE_BTN = (By.XPATH, "//div[@x-show='isModalOpen']//button[contains(@class, 'rounded-full') and .//i[contains(@class, 'fa-xmark')]]")
 
     def open(self, base_url):
         self.navigate_to(f"{base_url}/menu")

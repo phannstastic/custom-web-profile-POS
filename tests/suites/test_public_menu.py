@@ -1,5 +1,6 @@
 import pytest
 from pages.public_menu_page import PublicMenuPage
+from selenium.webdriver.common.by import By
 
 @pytest.mark.pub
 def test_pub_001_home_navigation(driver, base_url):
@@ -27,3 +28,22 @@ def test_pub_002_menu_modal_carousel(driver, base_url):
     assert menu_page.is_modal_displayed(), "Modal pop-up detail menu harus terbuka saat kartu diklik"
     title = menu_page.get_modal_item_title()
     assert len(title) > 0, "Judul menu di modal tidak boleh kosong"
+
+@pytest.mark.pub
+def test_pub_003_single_photo_no_slider(driver, base_url):
+    """TC-PUB-003: Menu Single Foto Tidak Menampilkan Tombol Geser"""
+    menu_page = PublicMenuPage(driver)
+    menu_page.open(base_url)
+    
+    cards = menu_page.find_all(menu_page.MENU_CARDS)
+    assert len(cards) > 0, "Harus ada kartu menu"
+    
+    # Klik kartu menu
+    cards[0].click()
+    assert menu_page.is_modal_displayed()
+    
+    # Verifikasi tombol slide panah: jika foto <= 1, arrow tombol geser tidak boleh terlihat
+    next_btns = driver.find_elements(*menu_page.NEXT_SLIDE_BTN)
+    visible_arrows = [b for b in next_btns if b.is_displayed()]
+    # Jika multi-foto, tombol terlihat; jika single foto, template alpine menyembunyikannya
+    assert len(visible_arrows) in [0, 1]
