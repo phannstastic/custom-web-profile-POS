@@ -221,13 +221,6 @@
                                     </template>
                                 </div>
 
-                                <!-- Optional Image Thumbnail -->
-                                <template x-if="product.image">
-                                    <div class="w-full h-28 mb-2.5 rounded-xl overflow-hidden bg-stone-100 relative">
-                                        <img :src="'/assets/images/products/' + product.image" :alt="product.name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
-                                    </div>
-                                </template>
-
                                 <h3 class="text-sm font-bold text-stone-900 group-hover:text-brand-600 transition-colors leading-snug line-clamp-2" x-text="product.name"></h3>
                                 <p class="text-[11px] text-stone-400 mt-1 line-clamp-2" x-text="product.description || ''"></p>
                             </div>
