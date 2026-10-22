@@ -21,6 +21,10 @@ jobs:
           extensions: pdo, pdo_sqlite, gd, json, mbstring
           ini-values: post_max_size=256M, upload_max_filesize=256M
 
+      - name: Install Composer Dependencies
+        run: |
+          composer install --no-interaction --prefer-dist --optimize-autoloader
+
       - name: Setup Database & Seeders
         run: |
           php database/migrate.php
