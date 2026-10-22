@@ -1,0 +1,55 @@
+name: Selenium QA Automation & E2E Testing
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  qa-automation-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP 8.2 & SQLite
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: pdo, pdo_sqlite, gd, json, mbstring
+          ini-values: post_max_size=256M, upload_max_filesize=256M
+
+      - name: Setup Database & Seeders
+        run: |
+          php database/migrate.php
+
+      - name: Start PHP Local Server
+        run: |
+          php -S 127.0.0.1:8008 -t public > /dev/null 2>&1 &
+          sleep 3
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Selenium & Test Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r tests/requirements.txt
+
+      - name: Run Selenium Test Suite (Headless Chrome)
+        env:
+          HEADLESS: "true"
+          BASE_URL: "http://127.0.0.1:8008"
+        run: |
+          pytest --html=tests/reports/report.html --self-contained-html
+
+      - name: Upload HTML Test Report Artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: selenium-test-report
+          path: tests/reports/
