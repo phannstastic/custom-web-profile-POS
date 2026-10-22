@@ -104,7 +104,7 @@ echo "Menjalankan seeding data default...\n";
 
 // Seeder Settings
 $settings = [
-    'store_name' => 'Pondok Makan Kang Naryo',
+    'store_name' => 'Resto Custom',
     'store_tagline' => 'Cita Rasa Masakan Khas Tradisional & Ikan Bakar Sedap',
     'store_address' => 'Jl. Kuliner Lezat No. 88, Malioboro, Yogyakarta',
     'store_phone' => '081234567890',
@@ -122,7 +122,7 @@ foreach ($settings as $k => $v) {
 // Seeder Users (Admin & Kasir)
 $users = [
     [
-        'name' => 'Administrator Kang Naryo',
+        'name' => 'Administrator',
         'username' => 'admin',
         'password' => password_hash('admin123', PASSWORD_BCRYPT),
         'role' => 'admin'
@@ -174,7 +174,7 @@ $products = [
         'category_slug' => 'makanan-utama',
         'name' => 'Ayam Bakar Madu Spesial',
         'slug' => 'ayam-bakar-madu-spesial',
-        'description' => 'Ayam bakar dengan bumbu kecap madu khas rempah Pondok Makan Kang Naryo, gurih manis meresap.',
+        'description' => 'Ayam bakar dengan bumbu kecap madu khas rempah pilihan nusantara, gurih manis meresap.',
         'price' => 22000,
         'image' => 'ayam-bakar.jpg',
         'is_available' => 1,
